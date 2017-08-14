@@ -2,6 +2,8 @@ from tkinter import Tk, Entry, Label, Button, messagebox, Menu, filedialog, Canv
 from PIL import Image, ImageTk
 import numpy as np
 import math
+import json
+
 
 class MyFirstGUI:
     def __init__(self, master):
@@ -27,6 +29,7 @@ class MyFirstGUI:
         #self.close_button.pack()
 
         self.canvas = Canvas(master, width=200, height=200)
+
 
         menubar = Menu(master)
 
@@ -118,7 +121,12 @@ class MyFirstGUI:
         filename = filedialog.askopenfilename(parent=root)
         print(filename)
         if filename.find("RAW") != -1 :
-            image = Image.frombytes('F',(389,162),open(filename,"rb").read(),'raw','F;8')
+            with open('raw.json') as json_data:
+                d = json.load(json_data)
+            dim = d['data'][filename.rsplit(".",1)[0].rsplit("/",1)[1]]
+            print(dim['x'])
+            print(dim['y'])
+            image = Image.frombytes('F',(dim['x'],dim['y']),open(filename,"rb").read(),'raw','F;8')
             photo = ImageTk.PhotoImage(image)
         else:
             image = Image.open(filename)
@@ -126,7 +134,8 @@ class MyFirstGUI:
 
         self.canvas.image = photo;
         self.canvas.true_image = image;
-        self.canvas.configure(width=image.width,height=image.height)
+        width,height = image.size
+        self.canvas.configure(width=width,height=height)
         self.canvas.create_image((0,0),anchor="nw",image=photo)
         self.canvas.bind("<Button-1>", select_pixel)
         self.canvas.bind("<Button-3>", set_pixel)
