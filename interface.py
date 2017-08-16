@@ -27,6 +27,9 @@ class MyFirstGUI:
         self.set_button = Button(master, text="Set Pixel", command=lambda: actions.set_color(self))
         self.set_button.pack()
 
+        self.set_button = Button(master, text="Clear", command=lambda: actions.do_clear(self))
+        self.set_button.pack()
+
         # self.close_button = Button(master, text="Close", command=master.quit)
         # self.close_button.pack()
 
@@ -48,8 +51,9 @@ class MyFirstGUI:
         menubar.add_cascade(label="Edit", menu=editmenu)
 
         gimagemenu = Menu(menubar, tearoff=0)
-        gimagemenu.add_command(label="Circle", command=self.generate_circle)
-        gimagemenu.add_command(label="Square", command=self.generate_square)
+        gimagemenu.add_command(label="Circle", command=lambda: actions.generate_circle(self))
+        gimagemenu.add_command(label="Square", command=lambda: actions.generate_square(self))
+        gimagemenu.add_command(label="Degrade", command=lambda: actions.generate_degrade(self))
         menubar.add_cascade(label="Images", menu=gimagemenu)
 
         master.config(menu=menubar)
@@ -121,51 +125,7 @@ class MyFirstGUI:
         self.canvas.true_image.save(filename)
         print(filename)
 
-    # http://www.programcreek.com/python/example/57106/Image.frombytes
-    def toImage(arr):
-        if arr.type().bytes == 1:
-            im = Image.frombytes('L', arr.shape[::-1], arr.tostring())
-        else:
-            arr_c = arr - arr.min()
-            arr_c *= (255. / arr_c.max())
-            arr = arr_c.astype(UInt8)
-            im = Image.frombytes('L', arr.shape[::-1], arr.tostring())
-        return im
 
-    def generate_square(self):
-        img_size = 200
-        default_color = 0
-        black = 0
-        white = 255
-
-        # img_matrix = [[default_color] * img_size for i in range(img_size)]
-        #
-        # for x in range(img_size):
-        #     for y in range(img_size):
-        #         if (y==0 or y == (img_size-1)):
-        #             img_matrix[x][y] = white
-        #
-        #         if (x==0 or x == (img_size-1)):
-        #             img_matrix[x][y] = white
-
-        img_array = [0] * (img_size * img_size)
-
-        for i in range(img_size * img_size):
-            x = math.floor(i / img_size)
-            y = i % img_size
-
-            if (y == 0 or y == (img_size - 1)):
-                img_matrix[i] = white
-
-            if (x == 0 or x == (img_size - 1)):
-                img_matrix[i] = white
-
-        img_ret = toImage(img_array)
-        # Luego, guardar en RAW la imagen retornada por la funcion
-        print("DONE")
-
-    def generate_circle(self):
-        print("TO DO")
 
 
 root = Tk()

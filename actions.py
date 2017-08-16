@@ -1,14 +1,16 @@
 from tkinter import Tk, Toplevel, Entry, Label, Button, messagebox, Menu, filedialog, Canvas
 from PIL import Image, ImageTk
 import numpy as np
-
+import math
 
 def set_color(self):
     color = int(self.color_text.get())
-    self.canvas.true_image.putpixel((int(self.x_text.get()), int(self.y_text.get())), color)
+    set_pixel(color, self.x_text.get(), self.y_text.get())
+
+def set_pixel(self, color, x, y):
+    self.canvas.true_image.putpixel((int(x), int(y)), color)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
 
 def crop(self, master):
     self.new_window = Toplevel()
@@ -52,3 +54,29 @@ def get_area_info(self, master):
         for j in range(self.y_start, self.y_finish):
             total += img[i, j]
     print("Promedio:" + str(total/pixel_count))
+
+def do_clear(self):
+    self.canvas.delete("all")
+    print("Clear canvas done")
+
+def generate_square(self):
+    img_size = 200
+    default_color = 0
+    black = 0
+    white = 255
+
+    img_matrix = [[default_color] * img_size for i in range(img_size)]
+
+    for x in range(img_size):
+        for y in range(img_size):
+            if (y==0 or y == (img_size-1)) or (x==0 or x == (img_size-1)):
+                img_matrix[x][y] = white
+                set_pixel(self, white, x, y)
+
+    print("generate_square: DONE")
+
+def generate_circle(self):
+    print("generate_circle: TO DO")
+
+def generate_degrade(self):
+    print("generate_degrade: TO DO")
