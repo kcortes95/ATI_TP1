@@ -1,4 +1,4 @@
-from tkinter import Tk, Toplevel, Entry, Label, Button, messagebox, Menu, filedialog, Canvas
+from tkinter import Tk, Toplevel, Entry, Label, Button, messagebox, Menu, filedialog, Canvas, PhotoImage
 from PIL import Image, ImageTk
 import numpy as np
 import math
@@ -59,6 +59,7 @@ def do_clear(self):
     self.canvas.delete("all")
     print("Clear canvas done")
 
+# Version que no anda!
 def generate_square(self):
     img_size = 200
     default_color = 0
@@ -66,6 +67,15 @@ def generate_square(self):
     white = 255
 
     img_matrix = [[default_color] * img_size for i in range(img_size)]
+
+    img = Image.new('L',(img_size, img_size), black)
+    photo = PhotoImage(width=img_size, height=img_size)
+    self.canvas.image = photo
+    self.canvas.true_image = img
+    self.canvas.configure(width=img_size, height=img_size)
+    self.canvas.create_image((img_size, img_size), image=photo, state="normal")
+    self.canvas.pack();
+    self.canvas.rect = self.canvas.create_rectangle(-1, -1, -1, -1, fill='')
 
     for x in range(img_size):
         for y in range(img_size):

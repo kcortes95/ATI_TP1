@@ -33,7 +33,7 @@ class MyFirstGUI:
         # self.close_button = Button(master, text="Close", command=master.quit)
         # self.close_button.pack()
 
-        self.canvas = Canvas(master, width=200, height=200,cursor="crosshair")
+        self.canvas = Canvas(master, width=200, height=200, cursor="crosshair")
 
         menubar = Menu(master)
 
@@ -124,9 +124,6 @@ class MyFirstGUI:
         filename = filedialog.asksaveasfilename(parent=root)
         self.canvas.true_image.save(filename)
         print(filename)
-
-
-
 
 root = Tk()
 my_gui = MyFirstGUI(root)
