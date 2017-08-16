@@ -48,12 +48,25 @@ def crop(self, master):
 def get_area_info(self, master):
     pixel_count = abs(self.x_start - self.x_finish) * abs(self.y_start - self.y_finish)
     print("Cantidad de pixeles:" + str(pixel_count))
+    xstart = self.x_start if self.x_start < self.x_finish else self.x_finish
+    ystart = self.y_start if self.y_start < self.y_finish else self.y_finish
+    xfinish = self.x_start if self.x_start > self.x_finish else self.x_finish
+    yfinish = self.y_start if self.y_start > self.y_finish else self.y_finish
     img = self.canvas.true_image.load()
-    total = 0
-    for i in range(self.x_start, self.x_finish):
-        for j in range(self.y_start, self.y_finish):
-            total += img[i, j]
-    print("Promedio:" + str(total/pixel_count))
+
+    if isinstance(img[0, 0], tuple):
+        total = (0, 0, 0, 0)
+        for i in range(xstart, xfinish):
+            for j in range(ystart, yfinish):
+                total = tuple(map(lambda x, y: x + y, total, img[i, j]))
+        print("Promedio:" + str(tuple([x/pixel_count for x in total])))
+
+    else:
+        total = 0
+        for i in range(xstart, xfinish):
+            for j in range(ystart, yfinish):
+                total += img[i, j]
+        print("Promedio:" + str(total/pixel_count))
 
 
 def do_clear(self):
@@ -99,6 +112,10 @@ def generate_degrade(self):
     load_image_on_canvas(self, matrix)
 
 
+def generate_color_degrade(self):
+    matrix = np.zeros((255*255*255))
+
+
 def generate_empty(img_size):
     default_color = 0
     return np.full((img_size, img_size), default_color, dtype=np.uint8)
@@ -113,3 +130,14 @@ def load_image_on_canvas(self, matrix):
     self.canvas.configure(width=width, height=height)
     self.canvas.create_image((0, 0), image=photo, anchor='nw')
     self.canvas.pack()
+
+
+def rgb_to_hsv(self):
+    pixels = self.canvas.true_image.load()
+    width, height = self.canvas.true_image.size
+    data = np.zeros((width, height, len(pixels[0, 0])), dtype=np.uint8)
+    for x in range(0, width):
+        for y in range(0, height):
+            data[x, y] = pixels[x, y]
+    load_image_on_canvas(self, data[:, :, 0])
+    # img = Image.fromarray(data[:,:,1],'L')

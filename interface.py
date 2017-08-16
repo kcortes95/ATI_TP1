@@ -48,6 +48,7 @@ class MyFirstGUI:
         editmenu.add_command(label="Crop", command=lambda: actions.crop(self, master))
         filemenu.add_separator()
         editmenu.add_command(label="Area Info", command=lambda: actions.get_area_info(self, master))
+        editmenu.add_command(label="To HSV", command=lambda: actions.rgb_to_hsv(self))
         menubar.add_cascade(label="Edit", menu=editmenu)
 
         gimagemenu = Menu(menubar, tearoff=0)
