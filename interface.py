@@ -106,8 +106,8 @@ class MyFirstGUI:
             image = Image.open(filename)
             photo = ImageTk.PhotoImage(image)
 
-        self.canvas.image = photo;
-        self.canvas.true_image = image;
+        self.canvas.image = photo
+        self.canvas.true_image = image
         width, height = image.size
         self.canvas.configure(width=width, height=height)
         self.canvas.create_image((0, 0), anchor="nw", image=photo)
