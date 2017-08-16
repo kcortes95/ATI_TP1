@@ -67,8 +67,8 @@ class MyFirstGUI:
         print("hello")
 
     def open(self):
-        def select_pixel(event):
-            print(self.canvas.true_image.getpixel((event.x, event.y)))
+        # def select_pixel(event):
+            # print(self.canvas.true_image.getpixel((event.x, event.y)))
 
         def set_pixel(event):
             self.x_text.delete(0, len(self.x_text.get()))
@@ -79,16 +79,18 @@ class MyFirstGUI:
         def set_area(event):
             if self.release:
                 self.x_start = event.x
+                self.x_finish = event.x
             else:
                 self.x_finish = event.x
 
             if self.release:
                 self.y_start = event.y
-                self.release = False;
+                self.y_finish = event.y
+                self.release = False
             else:
                 self.y_finish = event.y
 
-            self.canvas.coords(self.canvas.rect, self.x_start, self.y_start, self.x_finish, self.y_finish);
+            self.canvas.coords(self.canvas.rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
 
         def release_left(event):
             self.release = True
@@ -112,12 +114,12 @@ class MyFirstGUI:
         width, height = image.size
         self.canvas.configure(width=width, height=height)
         self.canvas.create_image((0, 0), anchor="nw", image=photo)
-        self.canvas.bind("<Button-1>", select_pixel)
+        # self.canvas.bind("<Button-1>", select_pixel)
         self.canvas.bind("<Button-3>", set_pixel)
         self.canvas.bind("<B1-Motion>", set_area)
         self.canvas.bind("<ButtonRelease-1>", release_left)
-        self.canvas.pack();
-        self.canvas.rect = self.canvas.create_rectangle(-1, -1, -1, -1, fill='')
+        self.canvas.pack()
+        self.canvas.rect = self.canvas.create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
 
         print("DONE")
 
@@ -128,5 +130,5 @@ class MyFirstGUI:
 
 root = Tk()
 my_gui = MyFirstGUI(root)
-my_gui.release = True;
+my_gui.release = True
 root.mainloop()

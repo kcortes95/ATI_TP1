@@ -23,13 +23,10 @@ def crop(self, master):
     xfinish = self.x_start if self.x_start > self.x_finish else self.x_finish
     yfinish = self.y_start if self.y_start > self.y_finish else self.y_finish
     new_image = np.zeros((yfinish - ystart, xfinish - xstart), dtype=np.uint8)
-    # print("x from " + str(self.x_start) + " to  " + str(self.x_finish))
-    # print("y from " + str(self.y_start) + " to  " + str(self.y_finish))
     x = 0
     y = 0
     for x_pos in range(xstart, xfinish):
         for y_pos in range(ystart, yfinish):
-            print(str(x_pos) + " " + str(y_pos))
             aux = img[x_pos, y_pos]
             new_image[x, y] = aux
             x += 1
@@ -55,7 +52,11 @@ def get_area_info(self, master):
     img = self.canvas.true_image.load()
 
     if isinstance(img[0, 0], tuple):
-        total = (0, 0, 0, 0)
+        if len(img[0,0]) == 4:
+            total = (0, 0, 0, 0)
+        else:
+            total = (0, 0, 0)
+
         for i in range(xstart, xfinish):
             for j in range(ystart, yfinish):
                 total = tuple(map(lambda x, y: x + y, total, img[i, j]))
