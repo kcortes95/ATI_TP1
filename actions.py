@@ -3,26 +3,34 @@ from PIL import Image, ImageTk
 import numpy as np
 import math
 
+
 def set_color(self):
     color = int(self.color_text.get())
     set_pixel(color, self.x_text.get(), self.y_text.get())
+
 
 def set_pixel(self, color, x, y):
     self.canvas.true_image.putpixel((int(x), int(y)), color)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
+
 def crop(self, master):
     self.new_window = Toplevel()
     self.new_window.minsize(width=640, height=480)
-    self.new_window.config(menu=self.menubar)
+
+    button = Button(self.new_window, text="Guardar", command=lambda: save_cropped(self, master))
+    button.pack()
     img = self.canvas.true_image.load()
 
     xstart = self.x_start if self.x_start < self.x_finish else self.x_finish
     ystart = self.y_start if self.y_start < self.y_finish else self.y_finish
     xfinish = self.x_start if self.x_start > self.x_finish else self.x_finish
     yfinish = self.y_start if self.y_start > self.y_finish else self.y_finish
-    new_image = np.zeros((yfinish - ystart, xfinish - xstart), dtype=np.uint8)
+    if isinstance(img[0, 0], tuple):
+        new_image = np.zeros((yfinish - ystart, xfinish - xstart, len(img[0, 0])), dtype=np.uint8)
+    else:
+        new_image = np.zeros((yfinish - ystart, xfinish - xstart), dtype=np.uint8)
     x = 0
     y = 0
     for x_pos in range(xstart, xfinish):
@@ -32,7 +40,7 @@ def crop(self, master):
             x += 1
         y += 1
         x = 0
-    true_cropped = Image.fromarray(new_image, 'L')
+    true_cropped = Image.fromarray(new_image, self.canvas.true_image.mode)
     cropped = ImageTk.PhotoImage(true_cropped)
     self.new_window.canvas = Canvas(self.new_window, width=200, height=200)
     self.new_window.canvas.true_cropped = true_cropped
@@ -40,6 +48,12 @@ def crop(self, master):
     self.new_window.canvas.configure(width=true_cropped.width, height=true_cropped.height)
     self.new_window.canvas.create_image((0, 0), anchor="nw", image=cropped)
     self.new_window.canvas.pack()
+
+
+def save_cropped(self, master):
+    filename = filedialog.asksaveasfilename(parent=master)
+    self.new_window.canvas.true_cropped.save(filename)
+    print(filename)
 
 
 def get_area_info(self, master):

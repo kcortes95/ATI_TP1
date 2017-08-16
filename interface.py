@@ -5,6 +5,7 @@ import actions as actions
 import mouse as mouse
 import math
 import json
+import colorsys
 
 
 class MyFirstGUI:
