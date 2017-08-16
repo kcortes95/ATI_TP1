@@ -88,8 +88,15 @@ def generate_circle(self):
 
     load_image_on_canvas(self, img_matrix)
 
+
 def generate_degrade(self):
-    print("generate_degrade: TO DO")
+    matrix = np.zeros((255, 100), dtype=np.uint8)
+    for y in range(0, 255):
+        for x in range(0, 100):
+            matrix[y][x] = y
+
+    print(matrix)
+    load_image_on_canvas(self, matrix)
 
 
 def generate_empty(img_size):
@@ -98,7 +105,7 @@ def generate_empty(img_size):
 
 
 def load_image_on_canvas(self, matrix):
-    width, height = matrix.shape
+    height, width = matrix.shape
     img = Image.fromarray(matrix, 'L')
     photo = ImageTk.PhotoImage(img)
     self.canvas.image = photo
