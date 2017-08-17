@@ -30,7 +30,11 @@ def crop(self, master):
     if isinstance(img[0, 0], tuple):
         new_image = np.zeros((yfinish - ystart, xfinish - xstart, len(img[0, 0])), dtype=np.uint8)
     else:
-        new_image = np.zeros((yfinish - ystart, xfinish - xstart), dtype=np.uint8)
+        if self.canvas.true_image.mode == 'F' :
+            new_image = np.zeros((yfinish - ystart, xfinish - xstart), dtype=np.float32)
+        else:
+            new_image = np.zeros((yfinish - ystart, xfinish - xstart), dtype=np.uint8)
+
     x = 0
     y = 0
     for x_pos in range(xstart, xfinish):
