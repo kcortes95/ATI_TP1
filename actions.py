@@ -6,7 +6,7 @@ import math
 
 def set_color(self):
     color = int(self.color_text.get())
-    set_pixel(color, self.x_text.get(), self.y_text.get())
+    set_pixel(self,color, int(self.x_text.get()), int(self.y_text.get()))
 
 
 def set_pixel(self, color, x, y):
