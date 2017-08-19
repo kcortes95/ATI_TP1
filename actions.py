@@ -2,7 +2,7 @@ from tkinter import Tk, Toplevel, Entry, Label, Button, messagebox, Menu, filedi
 from PIL import Image, ImageTk
 import numpy as np
 import math
-
+import json
 
 def set_color(self):
     color = int(self.color_text.get())
@@ -160,3 +160,110 @@ def rgb_to_hsv(self):
             data[x, y] = pixels[x, y]
     load_image_on_canvas(self, data[:, :, 0])
     # img = Image.fromarray(data[:,:,1],'L')
+
+def add(self):
+    print("TODO")
+
+def supr(self):
+    print("TODO")
+
+def mult(self):
+    print("TODO")
+
+# La funcion de escalar no funciona cuando la imagen NO es cuadrada. Dice que se va fuera de los bounds, pero no encuentro
+# porque es que eso pasa! (Linea 198)
+def scalar_mult(self):
+    img2 = self.canvas.true_image.load()
+    width, height = self.canvas.true_image.size
+    scale = 2
+    aux_matrix = np.zeros((height, width), dtype=np.dtype('i8'))
+    print("width: " + str(width))
+    print("height: " + str(height))
+    try:
+        len(img2[0,0])
+    except TypeError:
+        print("BLANCO Y NEGRO")
+        aux_matrix = iterate(self, height, width, scale, img2)
+        return aux_matrix
+
+    print("COLOR")
+    aux_matrix = iterate_color(self, height, width, scale, img2)
+    return aux_matrix
+
+def iterate(self, h, w, scale, matrix):
+    aux_matrix = np.zeros((h, w), dtype=np.dtype('i8'))
+    print("El valor de w: " + str(w))
+    print("El valor de h: " + str(h))
+    for i in range(w):
+        for j in range(h):
+            print("i: " + str(i) + " j: " + str(j))
+            aux_matrix[i,j] = matrix[i,j] * scale
+
+    return aux_matrix
+
+#Esta funcion no fue testeada!
+def iterate_color(self, h, w, scale, matrix):
+    aux_matrix = np.zeros((h, w), dtype=np.dtype('i8'))
+    print("El valor de w: " + str(w))
+    print("El valor de h: " + str(h))
+    for i in range(w):
+        for j in range(h):
+            to_ret = [0,0,0]
+
+            for k in range(3):
+                to_ret[k] = matrix[i,j,k]*scale
+
+            aux_matrix[i,j] = to_ret
+
+    return aux_matrix
+
+def img_open(self):
+    def set_pixel(event):
+        self.x_text.delete(0, len(self.x_text.get()))
+        self.y_text.delete(0, len(self.y_text.get()))
+        self.x_text.insert(0, event.x)
+        self.y_text.insert(0, event.y)
+
+    def set_area(event):
+        if self.release:
+            self.x_start = event.x
+            self.x_finish = event.x
+        else:
+            self.x_finish = event.x
+
+        if self.release:
+            self.y_start = event.y
+            self.y_finish = event.y
+            self.release = False
+        else:
+            self.y_finish = event.y
+
+        self.canvas.coords(self.canvas.rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
+
+    def release_left(event):
+        self.release = True
+
+    filename = filedialog.askopenfilename()
+    print(filename)
+    if filename.find("RAW") != -1:
+        with open('raw.json') as json_data:
+            d = json.load(json_data)
+        dim = d['data'][filename.rsplit(".", 1)[0].rsplit("/", 1)[1]]
+        print(dim['x'])
+        print(dim['y'])
+        image = Image.frombytes('F', (dim['x'], dim['y']), open(filename, "rb").read(), 'raw', 'F;8')
+        photo = ImageTk.PhotoImage(image)
+    else:
+        image = Image.open(filename)
+        photo = ImageTk.PhotoImage(image)
+
+    self.canvas.image = photo
+    self.canvas.true_image = image
+    width, height = image.size
+    self.canvas.configure(width=width, height=height)
+    self.canvas.create_image((0, 0), anchor="nw", image=photo)
+    self.canvas.bind("<Button-3>", set_pixel)
+    self.canvas.bind("<B1-Motion>", set_area)
+    self.canvas.bind("<ButtonRelease-1>", release_left)
+    self.canvas.pack()
+    self.canvas.rect = self.canvas.create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
