@@ -1,8 +1,11 @@
-from tkinter import Tk, Toplevel, Entry, Label, Button, messagebox, Menu, filedialog, Canvas, PhotoImage
+from tkinter import Tk, Toplevel, Entry, Label, Button, messagebox, Menu, filedialog, Canvas, PhotoImage, LEFT
 from PIL import Image, ImageTk
 import numpy as np
 import math
 import json
+
+MAX_HEIGHT = 1024
+MAX_WIDTH = 1024
 
 def set_color(self):
     color = int(self.color_text.get())
@@ -162,7 +165,77 @@ def rgb_to_hsv(self):
     # img = Image.fromarray(data[:,:,1],'L')
 
 def add(self):
-    print("TODO")
+    self.new_window = Toplevel()
+    self.new_window.minsize(width=800, height=600)
+    self.new_window.title("Add")
+    canvas = Canvas(self.new_window,height=300,width=300)
+
+    size1=[0,0]
+    size2=[0,0]
+
+    matrix_img1 = [[0 for i in range(MAX_WIDTH)] for j in range (MAX_HEIGHT)]
+    matrix_img2 = [[0 for i in range(MAX_WIDTH)] for j in range (MAX_HEIGHT)]
+
+    b1 = Button(self.new_window, text="Seleccionar IMAGEN 1", command=lambda: kevin_open(self, canvas, size1, matrix_img1))
+    b2 = Button(self.new_window, text="Seleccionar IMAGEN 2", command=lambda: kevin_open(self, canvas, size2, matrix_img2))
+    check = Button(self.new_window, text="Informacion de seleccionados", command=lambda: info_selected(self, size1, size2, matrix_img1, matrix_img2))
+
+    b1.pack()
+    b2.pack()
+    check.pack()
+
+
+def info_selected(self, size1, size2, matrix_img1, matrix_img2):
+    print("Info de las imagenes seleccionadas")
+    print("Size IMG1: " + str(size1))
+    print("Size IMG2: " + str(size2))
+    print("Primeros 4 de IMG1")
+    print(matrix_img1[0][0])
+    print(matrix_img1[0][1])
+    print(matrix_img1[1][0])
+    print(matrix_img1[1][1])
+    print("Primeros 4 de IMG2")
+    print(matrix_img2[0][0])
+    print(matrix_img2[0][1])
+    print(matrix_img2[1][0])
+    print(matrix_img2[1][1])
+    print("***********************")
+
+    return
+
+#TODO: Cambiar el nombre por algo mas generico
+def kevin_open(self, canvas, to_ret, matrix):
+    filename = filedialog.askopenfilename()
+    print(filename)
+    if filename.find("RAW") != -1:
+        with open('raw.json') as json_data:
+            d = json.load(json_data)
+        dim = d['data'][filename.rsplit(".", 1)[0].rsplit("/", 1)[1]]
+        print(dim['x'])
+        print(dim['y'])
+        image = Image.frombytes('F', (dim['x'], dim['y']), open(filename, "rb").read(), 'raw', 'F;8')
+        filename = ImageTk.PhotoImage(image)
+    else:
+        image = Image.open(filename)
+        filename = ImageTk.PhotoImage(image)
+
+    canvas.image = filename
+    width, height = image.size
+    canvas.create_image(0,0,anchor='nw',image=filename)
+    canvas.pack()
+
+    canvas.true_image = image
+    img_matrix = canvas.true_image.load()
+    print("COLOR: " + str(img_matrix[0,0]))
+
+    for i in range(width):
+        for j in range(height):
+            matrix[i][j] = img_matrix[i,j]
+
+    to_ret[0] = width
+    to_ret[1] = height
+    print(to_ret)
+
 
 def supr(self):
     print("TODO")
@@ -171,18 +244,19 @@ def mult(self):
     print("TODO")
 
 # La funcion de escalar no funciona cuando la imagen NO es cuadrada. Dice que se va fuera de los bounds, pero no encuentro
-# porque es que eso pasa! (Linea 198)
+# porque es que eso pasa! -> Linea 201: aux_matrix[i,j] = matrix[i,j] * scale
 def scalar_mult(self):
     img2 = self.canvas.true_image.load()
     width, height = self.canvas.true_image.size
     scale = 2
-    aux_matrix = np.zeros((height, width), dtype=np.dtype('i8'))
+
     print("width: " + str(width))
     print("height: " + str(height))
     try:
         len(img2[0,0])
     except TypeError:
         print("BLANCO Y NEGRO")
+        aux_matrix = np.zeros((height, width), dtype=np.dtype('i8'))
         aux_matrix = iterate(self, height, width, scale, img2)
         return aux_matrix
 
@@ -201,21 +275,15 @@ def iterate(self, h, w, scale, matrix):
 
     return aux_matrix
 
-#Esta funcion no fue testeada!
+#Esta funcion no esta terminada!
 def iterate_color(self, h, w, scale, matrix):
-    aux_matrix = np.zeros((h, w), dtype=np.dtype('i8'))
     print("El valor de w: " + str(w))
     print("El valor de h: " + str(h))
     for i in range(w):
         for j in range(h):
-            to_ret = [0,0,0]
+            print(matrix[i,j])
 
-            for k in range(3):
-                to_ret[k] = matrix[i,j,k]*scale
-
-            aux_matrix[i,j] = to_ret
-
-    return aux_matrix
+    return
 
 def img_open(self):
     def set_pixel(event):
