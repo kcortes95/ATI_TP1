@@ -37,7 +37,7 @@ class MyFirstGUI:
         menubar = Menu(master)
 
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label="Open", command=lambda: actions.img_open(self))
+        filemenu.add_command(label="Open", command=self.open)
         filemenu.add_command(label="Save", command=self.save)
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=master.quit)
@@ -70,58 +70,57 @@ class MyFirstGUI:
     def greet(self):
         messagebox.showinfo("hola", "kevin");
 
-    # Movido a actions.py
-    # def open(self):
-    #
-    #     def set_pixel(event):
-    #         self.x_text.delete(0, len(self.x_text.get()))
-    #         self.y_text.delete(0, len(self.y_text.get()))
-    #         self.x_text.insert(0, event.x)
-    #         self.y_text.insert(0, event.y)
-    #
-    #     def set_area(event):
-    #         if self.release:
-    #             self.x_start = event.x
-    #             self.x_finish = event.x
-    #         else:
-    #             self.x_finish = event.x
-    #
-    #         if self.release:
-    #             self.y_start = event.y
-    #             self.y_finish = event.y
-    #             self.release = False
-    #         else:
-    #             self.y_finish = event.y
-    #
-    #         self.canvas.coords(self.canvas.rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
-    #
-    #     def release_left(event):
-    #         self.release = True
-    #
-    #     filename = filedialog.askopenfilename(parent=root)
-    #     print(filename)
-    #     if filename.find("RAW") != -1:
-    #         with open('raw.json') as json_data:
-    #             d = json.load(json_data)
-    #         dim = d['data'][filename.rsplit(".", 1)[0].rsplit("/", 1)[1]]
-    #         print(dim['x'])
-    #         print(dim['y'])
-    #         image = Image.frombytes('F', (dim['x'], dim['y']), open(filename, "rb").read(), 'raw', 'F;8')
-    #         photo = ImageTk.PhotoImage(image)
-    #     else:
-    #         image = Image.open(filename)
-    #         photo = ImageTk.PhotoImage(image)
-    #
-    #     self.canvas.image = photo
-    #     self.canvas.true_image = image
-    #     width, height = image.size
-    #     self.canvas.configure(width=width, height=height)
-    #     self.canvas.create_image((0, 0), anchor="nw", image=photo)
-    #     self.canvas.bind("<Button-3>", set_pixel)
-    #     self.canvas.bind("<B1-Motion>", set_area)
-    #     self.canvas.bind("<ButtonRelease-1>", release_left)
-    #     self.canvas.pack()
-    #     self.canvas.rect = self.canvas.create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
+    def open(self):
+
+        def set_pixel(event):
+            self.x_text.delete(0, len(self.x_text.get()))
+            self.y_text.delete(0, len(self.y_text.get()))
+            self.x_text.insert(0, event.x)
+            self.y_text.insert(0, event.y)
+
+        def set_area(event):
+            if self.release:
+                self.x_start = event.x
+                self.x_finish = event.x
+            else:
+                self.x_finish = event.x
+
+            if self.release:
+                self.y_start = event.y
+                self.y_finish = event.y
+                self.release = False
+            else:
+                self.y_finish = event.y
+
+            self.canvas.coords(self.canvas.rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
+
+        def release_left(event):
+            self.release = True
+
+        filename = filedialog.askopenfilename(parent=root)
+        print(filename)
+        if filename.find("RAW") != -1:
+            with open('raw.json') as json_data:
+                d = json.load(json_data)
+            dim = d['data'][filename.rsplit(".", 1)[0].rsplit("/", 1)[1]]
+            print(dim['x'])
+            print(dim['y'])
+            image = Image.frombytes('F', (dim['x'], dim['y']), open(filename, "rb").read(), 'raw', 'F;8')
+            photo = ImageTk.PhotoImage(image)
+        else:
+            image = Image.open(filename)
+            photo = ImageTk.PhotoImage(image)
+
+        self.canvas.image = photo
+        self.canvas.true_image = image
+        width, height = image.size
+        self.canvas.configure(width=width, height=height)
+        self.canvas.create_image((0, 0), anchor="nw", image=photo)
+        self.canvas.bind("<Button-3>", set_pixel)
+        self.canvas.bind("<B1-Motion>", set_area)
+        self.canvas.bind("<ButtonRelease-1>", release_left)
+        self.canvas.pack()
+        self.canvas.rect = self.canvas.create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
 
     def save(self):
         filename = filedialog.asksaveasfilename(parent=root)
