@@ -7,7 +7,6 @@ import math
 import json
 import colorsys
 
-
 class MyFirstGUI:
     def __init__(self, master):
         self.master = master
@@ -55,6 +54,10 @@ class MyFirstGUI:
         editmenu.add_separator()
         editmenu.add_command(label="Scalar Mult", command=lambda: actions.scalar_mult(self))
         menubar.add_cascade(label="Edit", menu=editmenu)
+
+        datamenu = Menu(menubar,tearoff=0)
+        datamenu.add_command(label="hist", command=lambda: actions.show_hist(self))
+        menubar.add_cascade(menu=datamenu, label="Data")
 
 
         gimagemenu = Menu(menubar, tearoff=0)

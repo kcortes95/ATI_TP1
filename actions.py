@@ -3,9 +3,10 @@ from PIL import Image, ImageTk
 import numpy as np
 import math
 import json
-
+import data
 MAX_HEIGHT = 1024
 MAX_WIDTH = 1024
+
 
 def set_color(self):
     color = int(self.color_text.get())
@@ -284,3 +285,7 @@ def iterate_color(self, h, w, scale, matrix):
             print(matrix[i,j])
 
     return
+
+
+def show_hist(self):
+    data.get_histogram(np.array(self.canvas.true_image))
