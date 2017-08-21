@@ -56,7 +56,8 @@ class MyFirstGUI:
         menubar.add_cascade(label="Edit", menu=editmenu)
 
         datamenu = Menu(menubar,tearoff=0)
-        datamenu.add_command(label="hist", command=lambda: actions.show_hist(self))
+        datamenu.add_command(label="Histogram", command=lambda: actions.show_hist(self))
+        datamenu.add_command(label="Equalize", command=lambda: actions.equalize(self))
         menubar.add_cascade(menu=datamenu, label="Data")
 
 

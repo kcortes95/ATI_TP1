@@ -3,7 +3,7 @@ from PIL import Image, ImageTk
 import numpy as np
 import math
 import json
-import data
+import histoperations as hist
 MAX_HEIGHT = 1024
 MAX_WIDTH = 1024
 
@@ -288,4 +288,16 @@ def iterate_color(self, h, w, scale, matrix):
 
 
 def show_hist(self):
-    data.get_histogram(np.array(self.canvas.true_image))
+    hist.get_histogram(np.array(self.canvas.true_image))
+
+
+def equalize(self):
+
+    matrix = hist.equalize(np.array(self.canvas.true_image, dtype=np.uint8))
+    print("Shape" + str(matrix.shape))
+    print("element" + str(matrix[0, 0]))
+    e = Image.fromarray(np.array(matrix, dtype=np.uint8))
+    i = ImageTk.PhotoImage(e)
+    self.canvas.true_image = e
+    self.canvas.image = i
+    self.canvas.create_image((0, 0), anchor="nw", image=i)
