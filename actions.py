@@ -244,47 +244,29 @@ def supr(self):
 def mult(self):
     print("TODO")
 
-# La funcion de escalar no funciona cuando la imagen NO es cuadrada. Dice que se va fuera de los bounds, pero no encuentro
-# porque es que eso pasa! -> Linea 201: aux_matrix[i,j] = matrix[i,j] * scale
-def scalar_mult(self):
+
+def scalar_mult_textbox(self):
+    self.new_window = Toplevel()
+    self.new_window.minsize(width=200, height=70)
+    self.new_window.title("Ingrese valor")
+    self.l=Label(self.new_window,text="Ingrese el valor entero")
+    self.l.pack()
+    self.scale = Entry(self.new_window)
+    self.scale.pack()
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: scalar_mult(self, self.scale.get()))
+    self.ok.pack()
+
+
+def scalar_mult(self, scale):
     img2 = self.canvas.true_image.load()
     width, height = self.canvas.true_image.size
-    scale = 2
-
-    print("width: " + str(width))
-    print("height: " + str(height))
-    try:
-        len(img2[0,0])
-    except TypeError:
-        print("BLANCO Y NEGRO")
-        aux_matrix = np.zeros((height, width), dtype=np.dtype('i8'))
-        aux_matrix = iterate(self, height, width, scale, img2)
-        return aux_matrix
-
-    print("COLOR")
-    aux_matrix = iterate_color(self, height, width, scale, img2)
-    return aux_matrix
-
-def iterate(self, h, w, scale, matrix):
-    aux_matrix = np.zeros((h, w), dtype=np.dtype('i8'))
-    print("El valor de w: " + str(w))
-    print("El valor de h: " + str(h))
-    for i in range(w):
-        for j in range(h):
-            print("i: " + str(i) + " j: " + str(j))
-            aux_matrix[i,j] = matrix[i,j] * scale
-
-    return aux_matrix
-
-#Esta funcion no esta terminada!
-def iterate_color(self, h, w, scale, matrix):
-    print("El valor de w: " + str(w))
-    print("El valor de h: " + str(h))
-    for i in range(w):
-        for j in range(h):
-            print(matrix[i,j])
-
-    return
+    ar = np.array(self.canvas.true_image, dtype=np.uint8)
+    ar = int(scale) * ar
+    img_ar = Image.fromarray(ar)
+    img = ImageTk.PhotoImage(img_ar)
+    self.canvas.true_image = img_ar
+    self.canvas.image = img
+    self.canvas.create_image((0, 0), anchor="nw", image=img)
 
 
 def show_hist(self):
@@ -292,7 +274,6 @@ def show_hist(self):
 
 
 def equalize(self):
-
     matrix = hist.equalize(np.array(self.canvas.true_image, dtype=np.uint8))
     print("Shape" + str(matrix.shape))
     print("element" + str(matrix[0, 0]))

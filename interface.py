@@ -6,6 +6,7 @@ import mouse as mouse
 import math
 import json
 import colorsys
+import sys
 
 class MyFirstGUI:
     def __init__(self, master):
@@ -52,7 +53,7 @@ class MyFirstGUI:
         editmenu.add_command(label="Supr", command=lambda: actions.supr(self))
         editmenu.add_command(label="Mult", command=lambda: actions.mult(self))
         editmenu.add_separator()
-        editmenu.add_command(label="Scalar Mult", command=lambda: actions.scalar_mult(self))
+        editmenu.add_command(label="Scalar Mult", command=lambda: actions.scalar_mult_textbox(self))
         menubar.add_cascade(label="Edit", menu=editmenu)
 
         datamenu = Menu(menubar,tearoff=0)
