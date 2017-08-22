@@ -1,4 +1,4 @@
-from tkinter import Tk, Toplevel, Entry, Label, Button, messagebox, Menu, filedialog, Canvas, PhotoImage, LEFT
+from tkinter import Tk, Toplevel, Scale, Entry, Label, Button, messagebox, Menu, filedialog, Canvas, PhotoImage, LEFT
 from PIL import Image, ImageTk
 import numpy as np
 import math
@@ -270,7 +270,7 @@ def scalar_mult(self, scale):
 
 
 def show_hist(self):
-    hist.get_histogram(np.array(self.canvas.true_image))
+    hist.get_histogram(np.array(self.canvas.true_image, dtype=np.uint8))
 
 
 def equalize(self):
@@ -282,3 +282,34 @@ def equalize(self):
     self.canvas.true_image = e
     self.canvas.image = i
     self.canvas.create_image((0, 0), anchor="nw", image=i)
+
+
+def umbral(master,self):
+    def set_umbral(event):
+        self.canvas.true_image = Image.fromarray(hist.umbral(np.array(self.canvas.saved_image), self.w.get()))
+        self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+        self.canvas.create_image((0,0),anchor="nw",image=self.canvas.image)
+
+    def save():
+        self.w.pack_forget()
+        self.cancel.pack_forget()
+        self.accept.pack_forget()
+
+    def cancel():
+        self.canvas.true_image = self.canvas.saved_image
+        self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+        self.canvas.create_image((0,0),anchor="nw",image=self.canvas.image)
+        self.w.pack_forget()
+        self.cancel.pack_forget()
+        self.accept.pack_forget()
+
+    self.canvas.saved_image = self.canvas.true_image
+    w = Scale(master, from_=0, to=255, orient="h")
+    w.bind("<ButtonRelease-1>", set_umbral)
+    w.set(128)
+    w.pack()
+    self.accept = Button(master, text="Aceptar", width=10, height=1, command=save)
+    self.accept.pack()
+    self.cancel = Button(master,text="Cancelar", width=10, height=1, command=cancel)
+    self.cancel.pack()
+    self.w = w

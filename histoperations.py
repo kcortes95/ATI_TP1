@@ -85,3 +85,13 @@ def get_histogram(image):
         plt.bar(range(0, 256), image)
         plt.title("Grey")
         plt.show()
+
+
+def umbral(matrix, value):
+    new_matrix = np.zeros(matrix.shape)
+
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            new_matrix[i, j] = 255 if matrix[i, j] >= value else 0
+
+    return new_matrix
