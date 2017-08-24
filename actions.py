@@ -105,7 +105,7 @@ def load_image_on_canvas(self, matrix):
     self.canvas.true_image = img
     self.canvas.configure(width=width, height=height)
     self.canvas.create_image((0, 0), image=photo, anchor='nw')
-    self.canvas.pack()
+    self.canvas.grid(row=0,column=0)
 
 
 def rgb_to_hsv(self):
@@ -136,9 +136,9 @@ def add(self):
     b2 = Button(self.new_window, text="Seleccionar IMAGEN 2", command=lambda: kevin_open(self, canvas2, size2, matrix_img2))
     check = Button(self.new_window, text="Informacion de seleccionados", command=lambda: info_selected(self, size1, size2, np.array(canvas.true_image,dtype=np.uint8), np.array(canvas2.true_image,dtype=np.uint8)))
 
-    b1.pack()
-    b2.pack()
-    check.pack()
+    b1.grid(row=0,column=0)
+    b2.grid(row=0,column=1)
+    check.grid(row=1, column=0,columnspan=2)
 
 
 def info_selected(self, size1, size2, matrix_img1, matrix_img2):
@@ -267,38 +267,41 @@ def umbral(matrix, value):
     return new_matrix
 
 
-def contrast(self, image):
+def contrast(self, image,s1,s2):
     matrix = np.array(image)
-    out = np.zeros(matrix.shape,dtype=np.uint8)
+    out = np.zeros(matrix.shape, dtype=np.uint8)
     if isinstance(matrix[0, 0], np.ndarray):
         print("3")
         for i in range(len(matrix[0, 0])):
             aux = matrix[:, :, i]
-            out[:, :, i] = apply_contrast(aux,np.mean(aux),np.std(aux))
+            out[:, :, i] = apply_contrast(aux,np.mean(aux),np.std(aux), s1, s2)
     else:
         print("UNA SOLA")
-        out = apply_contrast(matrix,np.mean(matrix),np.std(matrix))
+        out = apply_contrast(matrix,np.mean(matrix),np.std(matrix), s1, s2)
     return out
 
-def apply_contrast(matrix, mean, std):
+
+def apply_contrast(matrix, mean, std, s1, s2):
     r1 = mean - 1/2 * std
     r2 = mean + 1/2 * std
-    print("Mean: " + str(mean))
-    print("std: " + str(std))
-    print("r1: " + str(r1))
-    print("r2: " + str(r2))
-    s1 = 30
-    s2 = 150
     out = np.zeros(matrix.shape,dtype=np.uint8)
     print(matrix.shape)
+    m1 = s1/r1
+    m2 = (s2 - s1) / (r2 - r1)
+    b2 = s1 - r1 * m2
+    m3 = (s2 - 255)/(r2 - 255)
+    b3 = s2 - m3*r2
     for i in range(matrix.shape[0]):
         for j in range(matrix.shape[1]):
             if matrix[i, j] > r2:
-                out[i, j] = getf3(matrix[i, j], r2, s2)
+                out[i, j] = m3*matrix[i, j] + b3
+                #out[i, j] = getf3(matrix[i, j],r2,s2)
             elif matrix[i, j] > r1:
-                out[i, j] = getf2(matrix[i, j], r1, r2, s1, s2)
+                out[i, j] = m2*matrix[i, j] + b2
+                #out[i, j] = getf2(matrix[i, j], r1, r2, s1, s2)
             else:
-                out[i, j] = getf1(matrix[i, j], r1, s1)
+                out[i, j] = m1*matrix[i, j]
+                #out[i, j] = getf1(matrix[i, j], r1, s1)
 
     return out
 
