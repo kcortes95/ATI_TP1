@@ -71,7 +71,11 @@ class MyFirstGUI:
         menubar.add_cascade(label="Generate", menu=gimagemenu)
 
         filter_menu = Menu(menubar, tearoff=0)
-        filter_menu.add_command(label="Mean", command=lambda: actions.mean_filter(self, 3))
+        filter_menu.add_command(label="Mean", command=lambda: actions.mean_filter(self, 5))
+        filter_menu.add_command(label="Weighted Mean", command=lambda: actions.weighted_mean_filter(self, 3))
+        filter_menu.add_command(label="Median", command=lambda: actions.median_filter(self, 3))
+        filter_menu.add_command(label="Gauss", command=lambda: actions.gauss_filter(self, 41))
+        filter_menu.add_command(label="High-Pass", command=lambda: actions.highpass_filter(self, 3))
 
         menubar.add_cascade(menu=filter_menu, label="Filters")
 
