@@ -1,14 +1,13 @@
-from tkinter import Tk, Entry, Label, Button, messagebox, Menu, filedialog, Canvas, PhotoImage
+from tkinter import Tk, Entry, Scale, Label, Button, messagebox, Menu, filedialog, Canvas, PhotoImage
 from PIL import Image, ImageTk
-import numpy as np
+
 import actions as actions
-import mouse as mouse
-import math
+import generation as gen
 import json
-import colorsys
-import sys
+import numpy as np
 
 class MyFirstGUI:
+
     def __init__(self, master):
         self.master = master
         master.minsize(width=640, height=480)
@@ -58,23 +57,19 @@ class MyFirstGUI:
 
         datamenu = Menu(menubar,tearoff=0)
         datamenu.add_command(label="Histogram", command=lambda: actions.show_hist(self))
-        datamenu.add_command(label="Umbral", command=lambda: actions.umbral(master, self))
+        datamenu.add_command(label="Threshold", command=lambda: self.umbral(master))
         datamenu.add_command(label="Equalize", command=lambda: actions.equalize(self))
+        datamenu.add_command(label="Contrast",command=self.contrast)
         menubar.add_cascade(menu=datamenu, label="Data")
 
-
         gimagemenu = Menu(menubar, tearoff=0)
-        gimagemenu.add_command(label="Circle", command=lambda: actions.generate_circle(self))
-        gimagemenu.add_command(label="Square", command=lambda: actions.generate_square(self))
-        gimagemenu.add_command(label="Degrade", command=lambda: actions.generate_degrade(self))
+        gimagemenu.add_command(label="Circle", command=lambda: gen.generate_circle(self))
+        gimagemenu.add_command(label="Square", command=lambda: gen.generate_square(self))
+        gimagemenu.add_command(label="Degrade", command=lambda: gen.generate_degrade(self))
         menubar.add_cascade(label="Generate", menu=gimagemenu)
 
         master.config(menu=menubar)
-        self.menubar = menubar;
-
-
-    def greet(self):
-        messagebox.showinfo("hola", "kevin");
+        self.menubar = menubar
 
     def open(self):
 
@@ -132,6 +127,43 @@ class MyFirstGUI:
         filename = filedialog.asksaveasfilename(parent=root)
         self.canvas.true_image.save(filename)
         print(filename)
+
+    def umbral(self, master):
+        def set_umbral(event):
+            self.canvas.true_image = Image.fromarray(actions.umbral(np.array(self.canvas.saved_image), self.w.get()))
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+        def save():
+            self.w.pack_forget()
+            self.cancel.pack_forget()
+            self.accept.pack_forget()
+
+        def cancel():
+            self.canvas.true_image = self.canvas.saved_image
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+            self.w.pack_forget()
+            self.cancel.pack_forget()
+            self.accept.pack_forget()
+
+        self.canvas.saved_image = self.canvas.true_image
+        w = Scale(master, from_=0, to=255, orient="h")
+        w.bind("<ButtonRelease-1>", set_umbral)
+        w.set(128)
+        w.pack()
+        self.accept = Button(master, text="Aceptar", width=10, height=1, command=save)
+        self.accept.pack()
+        self.cancel = Button(master, text="Cancelar", width=10, height=1, command=cancel)
+        self.cancel.pack()
+        self.w = w
+
+    def contrast(self):
+        mat = actions.contrast(self, self.canvas.true_image)
+        self.canvas.true_image = Image.fromarray(mat)
+        self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+        self.canvas.create_image((0,0), anchor="nw", image=self.canvas.image)
+
 
 root = Tk()
 my_gui = MyFirstGUI(root)
