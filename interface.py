@@ -70,6 +70,11 @@ class MyFirstGUI:
         gimagemenu.add_command(label="Degrade", command=lambda: gen.generate_degrade(self))
         menubar.add_cascade(label="Generate", menu=gimagemenu)
 
+        filter_menu = Menu(menubar, tearoff=0)
+        filter_menu.add_command(label="Mean", command=lambda: actions.mean_filter(self, 3))
+
+        menubar.add_cascade(menu=filter_menu, label="Filters")
+
         master.config(menu=menubar)
         self.menubar = menubar
         self.label_frame = LabelFrame(master, text="Operation")

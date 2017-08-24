@@ -4,6 +4,7 @@ import numpy as np
 import math
 import json
 import histoperations as hist
+import meshoperations as mesh
 MAX_HEIGHT = 1024
 MAX_WIDTH = 1024
 
@@ -320,3 +321,10 @@ def getf2(value, r1, r2, s1, s2):
 
 def getf1(value, r1, s1):
     return s1/r1*value
+
+
+def mean_filter(self, size):
+    m = mesh.mean_filter(np.array(self.canvas.true_image), size)
+    self.canvas.true_image = Image.fromarray(m)
+    self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+    self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
