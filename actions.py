@@ -279,17 +279,17 @@ def get_pixels(self, percentage, action):
         # print("")
 
 # Deberia retornar un numero segun la funcion para despues sumarlo o multiplicarlo
-def probabilistic_function(self, action):
-    if action == 'gaussian':
-       print("gaussian")
-    elif action == 'rayleigh':
-       print("rayleigh")
-    elif action == 'exponential':
-       print("exponential")
-    elif action == 'salt_and_pepper':
-       print("salt and pepper")
-    else:
-       print("all")
+# def probabilistic_function(self, action):
+#     if action == 'gaussian':
+#        print("gaussian")
+#     elif action == 'rayleigh':
+#        print("rayleigh")
+#     elif action == 'exponential':
+#        print("exponential")
+#     elif action == 'salt_and_pepper':
+#        print("salt and pepper")
+#     else:
+#        print("all")
 
 
 def err_msg(message):
