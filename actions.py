@@ -5,9 +5,11 @@ import math
 import json
 import histoperations as hist
 import meshoperations as mesh
+import tkinter.messagebox as msgbox
+import random
+
 MAX_HEIGHT = 1024
 MAX_WIDTH = 1024
-
 
 def set_color(self):
     color = int(self.color_text.get())
@@ -112,7 +114,9 @@ def rgb_to_hsv(self):
     load_image_on_canvas(self, data[:, :, 0])
     # img = Image.fromarray(data[:,:,1],'L')
 
-def add(self):
+#--------------------KEVIN--------------------
+
+def opr(self):
     self.new_window = Toplevel()
     self.new_window.minsize(width=480, height=360)
     self.new_window.title("Add")
@@ -131,7 +135,6 @@ def add(self):
     b1.grid(row=0,column=0)
     b2.grid(row=0,column=1)
     check.place(relx=0.5, rely=1, relwidth=1 ,anchor="s", bordermode="outside")
-
 
 def operations(self, matrix_img1, matrix_img2):
     sum(self, matrix_img1, matrix_img2, "SUM")
@@ -221,12 +224,6 @@ def kevin_open(self, canvas, matrix, r, c):
     canvas.grid(row=r,column=c)
     matrix = np.array(canvas.true_image)
 
-def supr(self):
-    print("TODO")
-
-def mult(self):
-    print("TODO")
-
 def scalar_mult_textbox(self):
     self.new_window = Toplevel()
     self.new_window.minsize(width=200, height=70)
@@ -248,6 +245,59 @@ def scalar_mult(self, scale):
     self.canvas.true_image = img_ar
     self.canvas.image = img
     self.canvas.create_image((0, 0), anchor="nw", image=img)
+
+def percentage_textbox(self, action):
+    self.new_window = Toplevel()
+    self.new_window.minsize(width=200, height=70)
+    self.new_window.title("Enter percentage")
+    self.l=Label(self.new_window,text="Integer value from 0 to 100")
+    self.l.pack()
+    self.per = Entry(self.new_window)
+    self.per.pack()
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: get_pixels(self, int(self.per.get()), action ) )
+    self.ok.pack()
+
+
+def get_pixels(self, percentage, action):
+
+    width, height = self.canvas.true_image.size
+    img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
+
+    tot = width * height
+
+    if percentage < 0 or percentage > 100:
+        err_msg("Invalid percentage")
+
+    print("IMPRIMO SIZE: " + str(self.canvas.true_image.size))
+    print("TOT PIXELS: " + str(tot))
+    print("PERCENTAGE: " + str(percentage))
+
+    mod_tot_pixels = int(tot * percentage/100)
+    print("TOT TO CHANGE: " + str(mod_tot_pixels))
+
+    for i in range(int(mod_tot_pixels)):
+        # print("")
+
+# Deberia retornar un numero segun la funcion para despues sumarlo o multiplicarlo
+def probabilistic_function(self, action):
+    if action == 'gaussian':
+       print("gaussian")
+    elif action == 'rayleigh':
+       print("rayleigh")
+    elif action == 'exponential':
+       print("exponential")
+    elif action == 'salt_and_pepper':
+       print("salt and pepper")
+    else:
+       print("all")
+
+
+def err_msg(message):
+    window = Tk()
+    window.wm_withdraw()
+    msgbox.showinfo(title="Error", message=message)
+
+#--------------------KEVIN--------------------
 
 def show_hist(self):
     hist.get_histogram(np.array(self.canvas.true_image, dtype=np.uint8))

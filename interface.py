@@ -30,6 +30,7 @@ class MyFirstGUI:
         editmenu.add_command(label="Area Info", command=lambda: actions.get_area_info(self, master))
         editmenu.add_command(label="To HSV", command=lambda: actions.rgb_to_hsv(self))
         editmenu.add_separator()
+        editmenu.add_command(label="Operations", command=lambda: actions.opr(self))
         editmenu.add_command(label="Scalar Mult", command=lambda: actions.scalar_mult_textbox(self))
         menubar.add_cascade(label="Edit", menu=editmenu)
 
@@ -39,12 +40,6 @@ class MyFirstGUI:
         datamenu.add_command(label="Equalize", command=lambda: actions.equalize(self))
         datamenu.add_command(label="Contrast",command=lambda: self.contrast(master))
         menubar.add_cascade(menu=datamenu, label="Data")
-
-        image_menu = Menu(menubar,tearoff=0)
-        image_menu.add_command(label="Add", command=lambda: actions.add(self))
-        image_menu.add_command(label="Supr", command=lambda: actions.supr(self))
-        image_menu.add_command(label="Mult", command=lambda: actions.mult(self))
-        editmenu.add_cascade(menu=image_menu,label="Image")
 
         gimagemenu = Menu(menubar, tearoff=0)
         gimagemenu.add_command(label="Circle", command=lambda: gen.generate_circle(self))
@@ -58,8 +53,16 @@ class MyFirstGUI:
         filter_menu.add_command(label="Median", command=lambda: actions.median_filter(self, 3))
         filter_menu.add_command(label="Gauss", command=lambda: actions.gauss_filter(self, 41))
         filter_menu.add_command(label="High-Pass", command=lambda: actions.highpass_filter(self, 3))
-
         menubar.add_cascade(menu=filter_menu, label="Filters")
+
+        noise_menu = Menu(menubar, tearoff=0)
+        noise_menu.add_command(label="Gaussian", command=lambda: actions.percentage_textbox(self, 'gaussian'))
+        noise_menu.add_command(label="Rayleigh", command=lambda: actions.percentage_textbox(self, 'rayleigh'))
+        noise_menu.add_command(label="Exponential", command=lambda: actions.percentage_textbox(self, 'exponential'))
+        noise_menu.add_command(label="Salt & Pepper", command=lambda: actions.percentage_textbox(self, 'salt_and_pepper'))
+        noise_menu.add_command(label="All", command=lambda: actions.percentage_textbox(self, 'all'))
+        menubar.add_cascade(menu=noise_menu, label="Noise")
+
 
         master.config(menu=menubar)
         self.menubar = menubar
