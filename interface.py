@@ -13,24 +13,6 @@ class MyFirstGUI:
         master.minsize(width=640, height=480)
         master.title("Adove Fotoyop")
 
-        # self.l1 = Label(master, text="First") #.grid(row=0)
-        # self.l2 = Label(master, text="Second")
-
-        # self.color_text = Entry()
-        # self.color_text.pack()
-
-        # self.x_text = Entry()
-        # self.x_text.pack()
-        #
-        # self.y_text = Entry()
-        # self.y_text.pack()
-        #
-        # self.set_button = Button(master, text="Set Pixel", width=10, height=1, command=lambda: actions.set_color(self))
-        # self.set_button.pack()
-        #
-        # self.clear_button = Button(master, text="Clear", width=10, height=1, command=lambda: actions.do_clear(self))
-        # self.clear_button.pack()
-
         self.canvas = Canvas(master, width=200, height=200, cursor="crosshair")
 
         menubar = Menu(master)

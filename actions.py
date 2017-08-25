@@ -13,12 +13,10 @@ def set_color(self):
     color = int(self.color_text.get())
     set_pixel(self,color, int(self.x_text.get()), int(self.y_text.get()))
 
-
 def set_pixel(self, color, x, y):
     self.canvas.true_image.putpixel((int(x), int(y)), color)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
 
 def crop(self, master):
     self.new_window = Toplevel()
@@ -58,12 +56,10 @@ def crop(self, master):
     self.new_window.canvas.create_image((0, 0), anchor="nw", image=cropped)
     self.new_window.canvas.pack()
 
-
 def save_cropped(self, master):
     filename = filedialog.asksaveasfilename(parent=master)
     self.new_window.canvas.true_cropped.save(filename)
     print(filename)
-
 
 def get_area_info(self, master):
     pixel_count = abs(self.x_start - self.x_finish) * abs(self.y_start - self.y_finish)
@@ -92,11 +88,9 @@ def get_area_info(self, master):
                 total += img[i, j]
         print("Promedio:" + str(total/pixel_count))
 
-
 def do_clear(self):
     self.canvas.delete("all")
     print("Clear canvas done")
-
 
 def load_image_on_canvas(self, matrix):
     height, width = matrix.shape
@@ -108,7 +102,6 @@ def load_image_on_canvas(self, matrix):
     self.canvas.create_image((0, 0), image=photo, anchor='nw')
     self.canvas.grid(row=0,column=0)
 
-
 def rgb_to_hsv(self):
     pixels = self.canvas.true_image.load()
     width, height = self.canvas.true_image.size
@@ -119,64 +112,92 @@ def rgb_to_hsv(self):
     load_image_on_canvas(self, data[:, :, 0])
     # img = Image.fromarray(data[:,:,1],'L')
 
-
 def add(self):
     self.new_window = Toplevel()
-    self.new_window.minsize(width=800, height=600)
+    self.new_window.minsize(width=480, height=360)
     self.new_window.title("Add")
+
     canvas = Canvas(self.new_window,height=300,width=300)
     canvas2 = Canvas(self.new_window, height=300, width=300)
-
-    size1=[0,0]
-    size2=[0,0]
+    canvas_result = Canvas(self.new_window, height=300, width=300)
 
     matrix_img1 = [[0 for i in range(MAX_WIDTH)] for j in range (MAX_HEIGHT)]
     matrix_img2 = [[0 for i in range(MAX_WIDTH)] for j in range (MAX_HEIGHT)]
 
-    b1 = Button(self.new_window, text="Seleccionar IMAGEN 1", command=lambda: kevin_open(self, canvas, size1, matrix_img1))
-    b2 = Button(self.new_window, text="Seleccionar IMAGEN 2", command=lambda: kevin_open(self, canvas2, size2, matrix_img2))
-    check = Button(self.new_window, text="Informacion de seleccionados", command=lambda: info_selected(self, size1, size2, np.array(canvas.true_image,dtype=np.uint8), np.array(canvas2.true_image,dtype=np.uint8)))
+    b1 = Button(self.new_window, text="Select IMG 1", command=lambda: kevin_open(self, canvas, matrix_img1, 1, 0))
+    b2 = Button(self.new_window, text="Select IMG 2", command=lambda: kevin_open(self, canvas2, matrix_img2, 1, 1))
+    check = Button(self.new_window, text="DONE", command=lambda: operations(self, np.array(canvas.true_image,dtype=np.uint8), np.array(canvas2.true_image,dtype=np.uint8)))
 
     b1.grid(row=0,column=0)
     b2.grid(row=0,column=1)
-    check.grid(row=1, column=0,columnspan=2)
+    check.place(relx=0.5, rely=1, relwidth=1 ,anchor="s", bordermode="outside")
 
 
-def info_selected(self, size1, size2, matrix_img1, matrix_img2):
-    print("Info de las imagenes seleccionadas")
-    print("Size IMG1: " + str(matrix_img1.shape))
-    print("Size IMG2: " + str(matrix_img2.shape))
-    print("Primeros 4 de IMG1")
-    print(matrix_img1[0][0])
-    print(matrix_img1[0][1])
-    print(matrix_img1[1][0])
-    print(matrix_img1[1][1])
-    print("Primeros 4 de IMG2")
-    print(matrix_img2[0][0])
-    print(matrix_img2[0][1])
-    print(matrix_img2[1][0])
-    print(matrix_img2[1][1])
-    print("***********************")
+def operations(self, matrix_img1, matrix_img2):
+    sum(self, matrix_img1, matrix_img2, "SUM")
+    sum(self, matrix_img1, -1*np.array(matrix_img2), "SUBSTRACT")
+    multiply(self, matrix_img1, matrix_img2, "MULTIPLY")
+
+def sum(self, matrix_img1, matrix_img2, title):
 
     if matrix_img1.shape == matrix_img2.shape:
         out = matrix_img1 + matrix_img2
     else:
         shape = (max(matrix_img1.shape[0], matrix_img2.shape[0]), max(matrix_img1.shape[1], matrix_img2.shape[1]))
         print(shape)
-        out = np.zeros(shape, dtype=np.uint8)
-        print(out.shape)
+        # out = np.zeros(shape, dtype=np.uint8)
+        out = np.zeros(shape, dtype=np.int8)
         out[:matrix_img1.shape[0], :matrix_img1.shape[1]] = matrix_img1
+
+        matrix_to_window
+        # print(matrix_img1.shape[0]) #alto img1
+        # print(matrix_img1.shape[1]) #ancho img1
+        # print(matrix_img2.shape[0])
+        # print(matrix_img2.shape[1])
+
         out[:matrix_img2.shape[0], :matrix_img2.shape[1]] += matrix_img2
 
-    # TOCAR ESTO
-    self.new_window.true_image = Image.fromarray(out)
-    self.new_window.image = ImageTk.PhotoImage(self.new_window.true_image)
-    self.canvas.create_image((0,0),anchor="nw",image=self.new_window.image)
+    #FALTA NORMALIZAR OUT
+    matrix_to_window(self, out, title)
     return out
 
+def multiply(self, matrix_img1, matrix_img2, title):
 
-#TODO: Cambiar el nombre por algo mas generico
-def kevin_open(self, canvas, to_ret, matrix):
+    if matrix_img1.shape == matrix_img2.shape:
+        out = matrix_img1 + matrix_img2
+    else:
+        shape = (max(matrix_img1.shape[0], matrix_img2.shape[0]), max(matrix_img1.shape[1], matrix_img2.shape[1]))
+        print(shape)
+        out = np.zeros(shape, dtype=np.int8)
+
+        out1 = np.zeros(shape, dtype=np.int8)
+        out2 = np.zeros(shape, dtype=np.int8)
+        out1[:matrix_img1.shape[0], :matrix_img1.shape[1]] += matrix_img1
+        out2[:matrix_img2.shape[0], :matrix_img2.shape[1]] += matrix_img2
+
+        out = np.array(out1) * np.array(out2)
+
+    #FALTA NORMALIZAR OUT
+    matrix_to_window(self, out, title)
+    return out
+
+def matrix_to_window(self, out, title):
+    height, width = out.shape
+
+    self.result_window = Toplevel()
+    self.result_window.minsize(width=width, height=height)
+    self.result_window.title(title)
+    canvas_result = Canvas(self.result_window, height=height, width=width)
+
+    img = Image.fromarray(out, 'L')
+    photo = ImageTk.PhotoImage(img)
+    canvas_result.image = photo
+    canvas_result.true_image = img
+    canvas_result.configure(width=width, height=height)
+    canvas_result.create_image((0, 0), image=photo, anchor='nw')
+    canvas_result.grid(row=0,column=0)
+
+def kevin_open(self, canvas, matrix, r, c):
     filename = filedialog.askopenfilename()
     print(filename)
     if filename.find("RAW") != -1:
@@ -194,30 +215,17 @@ def kevin_open(self, canvas, to_ret, matrix):
     canvas.image = filename
     width, height = image.size
     canvas.create_image(0,0,anchor='nw',image=filename)
-    canvas.pack()
-
     canvas.true_image = image
     img_matrix = canvas.true_image.load()
-    print("COLOR: " + str(img_matrix[0,0]))
 
-    # for i in range(width):
-    #    for j in range(height):
-    #        matrix[i][j] = img_matrix[i,j]
-
+    canvas.grid(row=r,column=c)
     matrix = np.array(canvas.true_image)
-
-    to_ret[0] = width
-    to_ret[1] = height
-    print(to_ret)
-
 
 def supr(self):
     print("TODO")
 
-
 def mult(self):
     print("TODO")
-
 
 def scalar_mult_textbox(self):
     self.new_window = Toplevel()
@@ -230,7 +238,6 @@ def scalar_mult_textbox(self):
     self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: scalar_mult(self, self.scale.get()))
     self.ok.pack()
 
-
 def scalar_mult(self, scale):
     img2 = self.canvas.true_image.load()
     width, height = self.canvas.true_image.size
@@ -242,10 +249,8 @@ def scalar_mult(self, scale):
     self.canvas.image = img
     self.canvas.create_image((0, 0), anchor="nw", image=img)
 
-
 def show_hist(self):
     hist.get_histogram(np.array(self.canvas.true_image, dtype=np.uint8))
-
 
 def equalize(self):
     matrix = hist.equalize(np.array(self.canvas.true_image, dtype=np.uint8))
@@ -257,7 +262,6 @@ def equalize(self):
     self.canvas.image = i
     self.canvas.create_image((0, 0), anchor="nw", image=i)
 
-
 def umbral(matrix, value):
     new_matrix = np.zeros(matrix.shape)
 
@@ -266,7 +270,6 @@ def umbral(matrix, value):
             new_matrix[i, j] = 255 if matrix[i, j] >= value else 0
 
     return new_matrix
-
 
 def contrast(self, image,s1,s2):
     matrix = np.array(image)
@@ -280,7 +283,6 @@ def contrast(self, image,s1,s2):
         print("UNA SOLA")
         out = apply_contrast(matrix,np.mean(matrix),np.std(matrix), s1, s2)
     return out
-
 
 def apply_contrast(matrix, mean, std, s1, s2):
     r1 = mean - 1/2 * std
@@ -306,22 +308,18 @@ def apply_contrast(matrix, mean, std, s1, s2):
 
     return out
 
-
 def getf3(value, r2, s2):
     m = (s2 - 255)/(r2 - 255)
     b = s2 - m*r2
     return m*value + b
-
 
 def getf2(value, r1, r2, s1, s2):
     m = (s2 - s1) / (r2 - r1)
     b = s1 - r1*m
     return m*value + b
 
-
 def getf1(value, r1, s1):
     return s1/r1*value
-
 
 def mean_filter(self, size):
     m = mesh.mean_filter(np.array(self.canvas.true_image), size)
@@ -329,13 +327,11 @@ def mean_filter(self, size):
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
-
 def weighted_mean_filter(self, size):
     m = mesh.weighted_mean_filter(np.array(self.canvas.true_image), size)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
 
 def gauss_filter(self, size):
     m = mesh.gauss_filter(np.array(self.canvas.true_image), size, 10)
@@ -348,7 +344,6 @@ def highpass_filter(self,size):
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
 
 def median_filter(self,size):
     m = mesh.median_filter(np.array(self.canvas.true_image), size)
