@@ -259,7 +259,6 @@ def percentage_textbox(self, action):
 
 
 def get_pixels(self, percentage, action):
-
     width, height = self.canvas.true_image.size
     img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
 
@@ -273,23 +272,35 @@ def get_pixels(self, percentage, action):
     print("PERCENTAGE: " + str(percentage))
 
     mod_tot_pixels = int(tot * percentage/100)
-    print("TOT TO CHANGE: " + str(mod_tot_pixels))
+    print("TOTAL TO CHANGE: " + str(mod_tot_pixels))
 
-    for i in range(int(mod_tot_pixels)):
-        # print("")
+    for i in range(mod_tot_pixels):
+        ranx = random.randint(0,width-1)
+        rany = random.randint(0, height-1)
+        print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
+        img_arr[rany][ranx] = probabilistic_function(self, action, img_arr[ranx][rany])
+
+    matrix_to_window(self, img_arr, action)
+
 
 # Deberia retornar un numero segun la funcion para despues sumarlo o multiplicarlo
-# def probabilistic_function(self, action):
-#     if action == 'gaussian':
-#        print("gaussian")
-#     elif action == 'rayleigh':
-#        print("rayleigh")
-#     elif action == 'exponential':
-#        print("exponential")
-#     elif action == 'salt_and_pepper':
-#        print("salt and pepper")
-#     else:
-#        print("all")
+def probabilistic_function(self, action, pixel_value):
+    if action == 'gaussian':
+        mu = 0
+        # DEBERIA PARAMETRIZAR EL VALOR DE SIGMA!!!
+        sigma = 2
+        s = np.random.normal(mu, sigma, 1)
+        return pixel_value + s
+    elif action == 'rayleigh':
+        # s = np.random.normal(mu, sigma, 1)
+        print("rayleigh")
+        # return pixel_value * s
+    elif action == 'exponential':
+        print("exponential")
+    elif action == 'salt_and_pepper':
+        print("salt and pepper")
+    else:
+        print("all")
 
 
 def err_msg(message):

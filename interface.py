@@ -1,6 +1,5 @@
 from tkinter import Tk, Entry, Scale, Label, LabelFrame, Button, messagebox, Menu, filedialog, Canvas, PhotoImage
 from PIL import Image, ImageTk
-
 import actions as actions
 import generation as gen
 import json
