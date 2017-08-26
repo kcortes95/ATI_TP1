@@ -246,6 +246,7 @@ def scalar_mult(self, scale):
     self.canvas.image = img
     self.canvas.create_image((0, 0), anchor="nw", image=img)
 
+#DE ACA HASTA KEVIN SON LOS METODOS PARA LOS RUIDOS
 def percentage_textbox(self, action):
     self.new_window = Toplevel()
     self.new_window.minsize(width=200, height=70)
@@ -254,9 +255,8 @@ def percentage_textbox(self, action):
     self.l.pack()
     self.per = Entry(self.new_window)
     self.per.pack()
-    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: get_pixels(self, int(self.per.get()), action ) )
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: get_pixels(self, int(self.per.get()), action))
     self.ok.pack()
-
 
 def get_pixels(self, percentage, action):
     width, height = self.canvas.true_image.size
@@ -274,39 +274,63 @@ def get_pixels(self, percentage, action):
     mod_tot_pixels = int(tot * percentage/100)
     print("TOTAL TO CHANGE: " + str(mod_tot_pixels))
 
-    for i in range(mod_tot_pixels):
-        ranx = random.randint(0,width-1)
-        rany = random.randint(0, height-1)
-        print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
-        img_arr[rany][ranx] = probabilistic_function(self, action, img_arr[ranx][rany])
+    if action=='salt_and_pepper':
+        salt_and_pepper(self, img_arr,mod_tot_pixels, width, height)
+    else:
+        for i in range(mod_tot_pixels):
+            ranx = random.randint(0,width-1)
+            rany = random.randint(0, height-1)
+            # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
+            img_arr[ranx][rany] = probabilistic_function(self, action, img_arr[ranx][rany])
 
-    matrix_to_window(self, img_arr, action)
+    matrix_to_window(self, img_arr, action + " " + str(percentage) + "%")
 
-
-# Deberia retornar un numero segun la funcion para despues sumarlo o multiplicarlo
 def probabilistic_function(self, action, pixel_value):
-    if action == 'gaussian':
-        mu = 0
+    if action == 'gaussian': #aditivo
         # DEBERIA PARAMETRIZAR EL VALOR DE SIGMA!!!
-        sigma = 2
+        # HACIENDOLO ASI, DA BASTANTE PARECIDO AL EJEMPLO DE LA DIAPOSITIVA.
+        mu = 0
+        sigma = 5
         s = np.random.normal(mu, sigma, 1)
         return pixel_value + s
-    elif action == 'rayleigh':
-        # s = np.random.normal(mu, sigma, 1)
+    elif action == 'rayleigh': #multiplicativo
+        # DEBERIA PARAMETRIZAR EL VALOR DE SIGMA!!!
+        # AYUDAAAAAAAAA QUE MIERDA PONGO DE VALORES ACA?
+        # NI IDEA SI ESTO ES ASI
+        phi = 13
+        val = 1 - math.exp(-1*(pixel_value**2 / (2*(phi**2)) ))
+        return pixel_value * val
+        # np.random.rayleigh(modevalue, 1)
         print("rayleigh")
         # return pixel_value * s
     elif action == 'exponential':
+        value = 1
+        return pixel_value * np.random.exponential(value)
         print("exponential")
     elif action == 'salt_and_pepper':
         print("salt and pepper")
     else:
         print("all")
 
-
 def err_msg(message):
     window = Tk()
     window.wm_withdraw()
     msgbox.showinfo(title="Error", message=message)
+
+def salt_and_pepper(self, img_arr, mod_tot_pixels, w, h):
+    p0 = np.random.rand()
+    p1 = 1 - p0
+
+    for i in range(mod_tot_pixels):
+        x = np.random.rand()
+        ranx = random.randint(0,w-1)
+        rany = random.randint(0, h-1)
+
+        if x <= p0:
+            img_arr[ranx][rany] = 0
+        elif x >= p1:
+            img_arr[ranx][rany] = 255
+
 
 #--------------------KEVIN--------------------
 
