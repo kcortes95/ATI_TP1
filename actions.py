@@ -256,25 +256,138 @@ def percentage_textbox(self, action):
     self.l.pack()
     self.per = Entry(self.new_window)
     self.per.pack()
-    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: get_pixels(self, int(self.per.get()), action))
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: generic_window(self, int(self.per.get()), action))
     self.ok.pack()
 
-def get_pixels(self, percentage, action):
+def generic_window(self, percentage, action):
+
     height, width = self.canvas.true_image.size
     img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
-
-    tot = width * height
 
     if percentage < 0 or percentage > 100:
         err_msg("Invalid percentage")
 
-    print("IMPRIMO SIZE: " + str(self.canvas.true_image.size))
-    print("TOT PIXELS: " + str(tot))
-    print("PERCENTAGE: " + str(percentage))
+    if action == 'gaussian': #aditivo
+        gaussian_window_values(self, width, height, img_arr, percentage)
+    elif action == 'rayleigh': #multiplicativo
+        rayleigh_window_values(self, width, height, img_arr, percentage)
+    elif action == 'exponential': #multiplicativo
+        exponential_window_values(self, width, height, img_arr, percentage)
+    elif action == 'salt_and_pepper':
+        sap_window_values(self, width, height, img_arr, percentage)
+        print("")
+    else:
+        print("All")
 
-    mod_tot_pixels = int(tot * percentage/100)
-    print("TOTAL TO CHANGE: " + str(mod_tot_pixels))
+def gaussian_window_values(self, width, height, img_arr, percentage):
+    self.g_win = Toplevel()
+    self.g_win.minsize(width=200, height=140)
+    self.g_win.title("Gaussian Values")
 
+    self.mu=Label(self.g_win,text="Mu:")
+    self.mu.pack()
+    self.mu_val = Entry(self.g_win)
+    self.mu_val.pack()
+
+    self.sigma=Label(self.g_win,text="Sigma:")
+    self.sigma.pack()
+    self.sigma_val = Entry(self.g_win)
+    self.sigma_val.pack()
+
+    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_gaussian_window(self, width, height, img_arr, percentage, float(self.mu_val.get()), float(self.sigma_val.get())))
+    self.ok.pack()
+
+def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma):
+    tot_pixels = int((width * height) * (percentage/100))
+    print("w: " + str(width))
+    print("h: " + str(height))
+    print("tot_pixels: " + str(tot_pixels))
+    print("%: " + str(percentage))
+    print("mu: " + str(mu))
+    print("sigma: " + str(sigma))
+
+    for i in range(tot_pixels):
+        ranx = random.randint(0, width-1)
+        rany = random.randint(0, height-1)
+        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
+        img_arr[ranx][rany] += random.gauss(mu, sigma)
+
+        if img_arr[ranx][rany] < 0:
+            img_arr[ranx][rany] = 0
+        elif img_arr[ranx][rany] > 255:
+            img_arr[ranx][rany] = 255
+
+    matrix_to_window(self, img_arr, "Gaussian " + str(percentage) + "%" )
+
+def rayleigh_window_values(self, width, height, img_arr, percentage):
+    self.g_win = Toplevel()
+    self.g_win.minsize(width=200, height=140)
+    self.g_win.title("Rayleigh Values")
+
+    self.xi=Label(self.g_win,text="Xi:")
+    self.xi.pack()
+    self.xi_val = Entry(self.g_win)
+    self.xi_val.pack()
+
+    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_rayleigh_window(self, width, height, img_arr, percentage, float(self.xi_val.get())))
+    self.ok.pack()
+
+def ret_rayleigh_window(self, width, height, img_arr, percentage, xi):
+    tot_pixels = int((width * height) * (percentage/100))
+    print("w: " + str(width))
+    print("h: " + str(height))
+    print("tot_pixels: " + str(tot_pixels))
+    print("%: " + str(percentage))
+    print("mu: " + str(xi))
+
+    for i in range(tot_pixels):
+        ranx = random.randint(0, width-1)
+        rany = random.randint(0, height-1)
+        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
+        img_arr[ranx][rany] *= myrand.rayleight_random(xi)
+
+        if img_arr[ranx][rany] < 0:
+            img_arr[ranx][rany] = 0
+        elif img_arr[ranx][rany] > 255:
+            img_arr[ranx][rany] = 255
+
+    matrix_to_window(self, img_arr, "Rayleigh " + str(percentage) + "%" )
+
+def exponential_window_values(self, width, height, img_arr, percentage):
+    self.g_win = Toplevel()
+    self.g_win.minsize(width=200, height=140)
+    self.g_win.title("Exponential Values")
+
+    self.lam=Label(self.g_win,text="Lambda:")
+    self.lam.pack()
+    self.lam_val = Entry(self.g_win)
+    self.lam_val.pack()
+
+    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_exponential_window(self, width, height, img_arr, percentage, float(self.lam_val.get())))
+    self.ok.pack()
+
+def ret_exponential_window(self, width, height, img_arr, percentage, lam):
+    tot_pixels = int((width * height) * (percentage/100))
+    print("w: " + str(width))
+    print("h: " + str(height))
+    print("tot_pixels: " + str(tot_pixels))
+    print("%: " + str(percentage))
+    print("lambda: " + str(lam))
+
+    for i in range(tot_pixels):
+        ranx = random.randint(0, width-1)
+        rany = random.randint(0, height-1)
+        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
+        img_arr[ranx][rany] *= myrand.exponential_random(lam)
+
+        if img_arr[ranx][rany] < 0:
+            img_arr[ranx][rany] = 0
+        elif img_arr[ranx][rany] > 255:
+            img_arr[ranx][rany] = 255
+
+    matrix_to_window(self, img_arr, "Exponential " + str(percentage) + "%" )
+
+def get_pixels(self, percentage, action):
     if action=='salt_and_pepper':
         salt_and_pepper(self, img_arr,mod_tot_pixels, width, height)
     else:
@@ -283,6 +396,7 @@ def get_pixels(self, percentage, action):
             rany = random.randint(0, height-1)
             # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
             img_arr[ranx][rany] = probabilistic_function(self, action, img_arr[ranx][rany])
+
             if img_arr[ranx][rany] < 0:
                 img_arr[ranx][rany] = 0
             elif img_arr[ranx][rany] > 255:
@@ -290,53 +404,28 @@ def get_pixels(self, percentage, action):
 
     matrix_to_window(self, img_arr, action + " " + str(percentage) + "%")
 
-
-def probabilistic_function(self, action, pixel_value):
-    if action == 'gaussian': #aditivo
-        # DEBERIA PARAMETRIZAR EL VALOR DE SIGMA!!!
-        # HACIENDOLO ASI, DA BASTANTE PARECIDO AL EJEMPLO DE LA DIAPOSITIVA.
-        mu = 0
-        sigma = 10
-        s = random.gauss(mu, sigma)
-        return pixel_value + s
-    elif action == 'rayleigh': #multiplicativo
-        # DEBERIA PARAMETRIZAR EL VALOR DE SIGMA!!!
-        # AYUDAAAAAAAAA QUE MIERDA PONGO DE VALORES ACA?
-        # NI IDEA SI ESTO ES ASI
-        phi = 13
-        val = myrand.rayleight_random(phi)
-        return pixel_value * val
-        # np.random.rayleigh(modevalue, 1)
-        print("rayleigh")
-        # return pixel_value * s
-    elif action == 'exponential':
-        value = 1
-        return pixel_value * np.random.exponential(value)
-        print("exponential")
-    elif action == 'salt_and_pepper':
-        print("salt and pepper")
-    else:
-        print("all")
-
-def err_msg(message):
-    window = Tk()
-    window.wm_withdraw()
-    msgbox.showinfo(title="Error", message=message)
-
-def salt_and_pepper(self, img_arr, mod_tot_pixels, w, h):
+def sap_window_values(self, width, height, img_arr, percentage):
     p0 = np.random.rand()
     p1 = 1 - p0
 
-    for i in range(mod_tot_pixels):
+    tot_pixels = int((width * height) * (percentage/100))
+
+    for i in range(tot_pixels):
         x = np.random.rand()
-        ranx = random.randint(0,w-1)
-        rany = random.randint(0, h-1)
+        ranx = random.randint(0,width-1)
+        rany = random.randint(0, height-1)
 
         if x <= p0:
             img_arr[ranx][rany] = 0
         elif x >= p1:
             img_arr[ranx][rany] = 255
 
+    matrix_to_window(self, img_arr, "Salt and Pepper " + str(percentage) + "%")
+
+def err_msg(message):
+    window = Tk()
+    window.wm_withdraw()
+    msgbox.showinfo(title="Error", message=message)
 
 #--------------------KEVIN--------------------
 
