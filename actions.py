@@ -7,6 +7,7 @@ import histoperations as hist
 import meshoperations as mesh
 import tkinter.messagebox as msgbox
 import random
+import myrandom as myrand
 
 MAX_HEIGHT = 1024
 MAX_WIDTH = 1024
@@ -259,7 +260,7 @@ def percentage_textbox(self, action):
     self.ok.pack()
 
 def get_pixels(self, percentage, action):
-    width, height = self.canvas.true_image.size
+    height, width = self.canvas.true_image.size
     img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
 
     tot = width * height
@@ -278,27 +279,32 @@ def get_pixels(self, percentage, action):
         salt_and_pepper(self, img_arr,mod_tot_pixels, width, height)
     else:
         for i in range(mod_tot_pixels):
-            ranx = random.randint(0,width-1)
+            ranx = random.randint(0, width-1)
             rany = random.randint(0, height-1)
             # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
             img_arr[ranx][rany] = probabilistic_function(self, action, img_arr[ranx][rany])
+            if img_arr[ranx][rany] < 0:
+                img_arr[ranx][rany] = 0
+            elif img_arr[ranx][rany] > 255:
+                img_arr[ranx][rany] = 255
 
     matrix_to_window(self, img_arr, action + " " + str(percentage) + "%")
+
 
 def probabilistic_function(self, action, pixel_value):
     if action == 'gaussian': #aditivo
         # DEBERIA PARAMETRIZAR EL VALOR DE SIGMA!!!
         # HACIENDOLO ASI, DA BASTANTE PARECIDO AL EJEMPLO DE LA DIAPOSITIVA.
         mu = 0
-        sigma = 5
-        s = np.random.normal(mu, sigma, 1)
+        sigma = 10
+        s = random.gauss(mu, sigma)
         return pixel_value + s
     elif action == 'rayleigh': #multiplicativo
         # DEBERIA PARAMETRIZAR EL VALOR DE SIGMA!!!
         # AYUDAAAAAAAAA QUE MIERDA PONGO DE VALORES ACA?
         # NI IDEA SI ESTO ES ASI
         phi = 13
-        val = 1 - math.exp(-1*(pixel_value**2 / (2*(phi**2)) ))
+        val = myrand.rayleight_random(phi)
         return pixel_value * val
         # np.random.rayleigh(modevalue, 1)
         print("rayleigh")
