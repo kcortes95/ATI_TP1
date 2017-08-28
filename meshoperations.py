@@ -61,7 +61,7 @@ def weighted_median_filter(matrix, size):
         return apply_weighted_median_one_dimension(matrix, size)
 
 
-def apply_median_one_dimension(matrix,size):
+def apply_weighted_median_one_dimension(matrix,size):
     out = np.zeros(matrix.shape, dtype=np.int16)
     radius = int(size / 2)
     mesh = [1, 2, 1, 2, 4, 2, 1, 2, 1]
@@ -75,7 +75,7 @@ def apply_median_one_dimension(matrix,size):
 
     return out
 
-def apply_weighted_median_one_dimension(matrix,size):
+def apply_median_one_dimension(matrix,size):
     out = np.zeros(matrix.shape, dtype=np.int16)
     radius = int(size / 2)
     shape = matrix.shape

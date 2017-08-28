@@ -237,7 +237,7 @@ def matrix_to_window(self, out, title, type):
     self.result_window.title(title)
     canvas_result = Canvas(self.result_window, height=height, width=width)
 
-    img = Image.fromarray(out, type)
+    img = Image.fromarray(out)
     photo = ImageTk.PhotoImage(img)
     canvas_result.image = photo
     canvas_result.true_image = img
@@ -307,6 +307,11 @@ def generic_window(self, percentage, action):
 
     height, width = self.canvas.true_image.size
     img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
+    print(img_arr)
+    img_arr = img_arr.astype(np.int16)
+    print(img_arr)
+
+
 
     type = get_img_type(self)
 
@@ -547,17 +552,20 @@ def getf2(value, r1, r2, s1, s2):
 def getf1(value, r1, s1):
     return s1/r1*value
 
+
 def mean_filter(self, size):
     m = mesh.mean_filter(np.array(self.canvas.true_image), size)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
+
 def weighted_mean_filter(self, size):
     m = mesh.weighted_mean_filter(np.array(self.canvas.true_image), size)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
 
 def weighted_median_filter(self, size):
     m = mesh.weighted_median_filter(np.array(self.canvas.true_image), size)
@@ -566,17 +574,19 @@ def weighted_median_filter(self, size):
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
 
-def gauss_filter(self, size):
-    m = mesh.gauss_filter(np.array(self.canvas.true_image), size, 10)
+def gauss_filter(self, size, sigma):
+    m = mesh.gauss_filter(np.array(self.canvas.true_image), size, sigma)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
 
 def highpass_filter(self,size):
     m = mesh.highpass_filter(np.array(self.canvas.true_image), size)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
 
 def median_filter(self,size):
     m = mesh.median_filter(np.array(self.canvas.true_image), size)

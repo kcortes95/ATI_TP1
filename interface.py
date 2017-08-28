@@ -48,11 +48,11 @@ class MyFirstGUI:
         menubar.add_cascade(label="Generate", menu=gimagemenu)
 
         filter_menu = Menu(menubar, tearoff=0)
-        filter_menu.add_command(label="Mean", command=lambda: actions.mean_filter(self, 5))
+        filter_menu.add_command(label="Mean", command=lambda: self.filter(actions.mean_filter))
+        filter_menu.add_command(label="Median", command=lambda: self.filter(actions.median_filter))
+        filter_menu.add_command(label="Gauss", command=lambda : self.gaussian_filter(master))
         filter_menu.add_command(label="Weighted Mean", command=lambda: actions.weighted_mean_filter(self, 3))
         filter_menu.add_command(label="Weighted Median", command=lambda: actions.weighted_median_filter(self, 3))
-        filter_menu.add_command(label="Median", command=lambda: actions.median_filter(self, 3))
-        filter_menu.add_command(label="Gauss", command=lambda: actions.gauss_filter(self, 41))
         filter_menu.add_command(label="High-Pass", command=lambda: actions.highpass_filter(self, 3))
         menubar.add_cascade(menu=filter_menu, label="Filters")
 
@@ -72,6 +72,7 @@ class MyFirstGUI:
         root.grid_columnconfigure(0, weight=1)
         root.grid_rowconfigure(1, weight=1)
         root.grid_rowconfigure(0, weight=1)
+
     def open(self):
 
         def set_pixel(event):
@@ -198,6 +199,66 @@ class MyFirstGUI:
         self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
         self.cancel.grid(row=1, column=1)
         self.label_frame.text = "Contrast"
+
+    def gaussian_filter(self, master):
+        def save():
+            self.w.grid_forget()
+            self.w2.grid_forget()
+            self.l.grid_forget()
+            self.l2.grid_forget()
+            self.cancel.grid_forget()
+            self.accept.grid_forget()
+            actions.gauss_filter(self, int(self.w.get()), int(self.w2.get()))
+
+        def cancel():
+            self.w.grid_forget()
+            self.w2.grid_forget()
+            self.l.grid_forget()
+            self.l2.grid_forget()
+            self.cancel.grid_forget()
+            self.accept.grid_forget()
+
+        l = Label(self.label_frame, text="Size")
+        l.grid(row=0,column = 0)
+        w = Entry(self.label_frame)
+        w.grid(row=0, column=1)
+        l2 = Label(self.label_frame, text="Desv")
+        l2.grid(row=0,column=2)
+        w2 = Entry(self.label_frame)
+        w2.grid(row=0, column=3)
+        self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
+        self.accept.grid(row=1, column=0,columnspan=2)
+        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
+        self.cancel.grid(row=1, column=2,columnspan=2)
+        self.w = w
+        self.w2 = w2
+        self.l = l
+        self.l2 = l2
+
+    def filter(self, function):
+        def save():
+            self.w.grid_forget()
+            self.l.grid_forget()
+            self.cancel.grid_forget()
+            self.accept.grid_forget()
+            function(self, int(self.w.get()))
+
+        def cancel():
+            self.w.grid_forget()
+            self.l.grid_forget()
+            self.cancel.grid_forget()
+            self.accept.grid_forget()
+
+        l = Label(self.label_frame, text="Size")
+        l.grid(row=0, column=0)
+        w = Entry(self.label_frame)
+        w.grid(row=0, column=1)
+        self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
+        self.accept.grid(row=1, column=0)
+        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
+        self.cancel.grid(row=1, column=1)
+        self.w = w
+        self.l = l
 
 
 root = Tk()
