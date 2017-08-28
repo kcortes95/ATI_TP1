@@ -117,6 +117,34 @@ def rgb_to_hsv(self):
 
 #--------------------KEVIN--------------------
 
+def to_negative(self):
+    true_img = self.canvas.true_image
+    pixels = true_img.load()
+    ar = np.array(true_img, dtype=np.uint8)
+    width, height = true_img.size
+
+    type = 'RGB'
+
+    try:
+        len(pixels[0, 0])
+    except TypeError:
+        type = 'L'
+
+    img_neg = 255 - ar
+    matrix_to_window(self, img_neg, "Negative", type)
+
+def get_img_type(self):
+    true_img = self.canvas.true_image
+    pixels = true_img.load()
+
+    type = 'RGB'
+    try:
+        len(pixels[0, 0])
+    except TypeError:
+        type = 'L'
+
+    return type
+
 def opr(self):
     self.new_window = Toplevel()
     self.new_window.minsize(width=480, height=360)
@@ -152,13 +180,6 @@ def sum(self, matrix_img1, matrix_img2, title):
         # out = np.zeros(shape, dtype=np.uint8)
         out = np.zeros(shape, dtype=np.int8)
         out[:matrix_img1.shape[0], :matrix_img1.shape[1]] = matrix_img1
-
-        matrix_to_window
-        # print(matrix_img1.shape[0]) #alto img1
-        # print(matrix_img1.shape[1]) #ancho img1
-        # print(matrix_img2.shape[0])
-        # print(matrix_img2.shape[1])
-
         out[:matrix_img2.shape[0], :matrix_img2.shape[1]] += matrix_img2
 
     #FALTA NORMALIZAR OUT
@@ -185,21 +206,40 @@ def multiply(self, matrix_img1, matrix_img2, title):
     matrix_to_window(self, out, title)
     return out
 
-def matrix_to_window(self, out, title):
-    height, width = out.shape
+#COLOR: RGB, B&W: L
+# def matrix_to_window(self, out, title):
+#     height = out.shape[0]
+#     width = out.shape[1]
+
+#     self.result_window = Toplevel()
+#     self.result_window.minsize(width=width, height=height)
+#     self.result_window.title(title)
+#     canvas_result = Canvas(self.result_window, height=height, width=width)
+
+#     img = Image.fromarray(out, 'L')
+#     photo = ImageTk.PhotoImage(img)
+#     canvas_result.image = photo
+#     canvas_result.true_image = img
+#     canvas_result.configure(width=width, height=height)
+#     canvas_result.create_image((0, 0), image=photo, anchor='nw')
+#     canvas_result.grid(row=0,column=0)
+
+def matrix_to_window(self, out, title, type):
+    height = out.shape[0]
+    width = out.shape[1]
 
     self.result_window = Toplevel()
     self.result_window.minsize(width=width, height=height)
     self.result_window.title(title)
     canvas_result = Canvas(self.result_window, height=height, width=width)
 
-    img = Image.fromarray(out, 'L')
+    img = Image.fromarray(out, type)
     photo = ImageTk.PhotoImage(img)
     canvas_result.image = photo
     canvas_result.true_image = img
     canvas_result.configure(width=width, height=height)
     canvas_result.create_image((0, 0), image=photo, anchor='nw')
-    canvas_result.grid(row=0,column=0)
+    canvas_result.grid(row=0,column=0)     
 
 def kevin_open(self, canvas, matrix, r, c):
     filename = filedialog.askopenfilename()
@@ -264,22 +304,24 @@ def generic_window(self, percentage, action):
     height, width = self.canvas.true_image.size
     img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
 
+    type = get_img_type(self)
+
     if percentage < 0 or percentage > 100:
         err_msg("Invalid percentage")
 
     if action == 'gaussian': #aditivo
-        gaussian_window_values(self, width, height, img_arr, percentage)
+        gaussian_window_values(self, width, height, img_arr, percentage, type)
     elif action == 'rayleigh': #multiplicativo
-        rayleigh_window_values(self, width, height, img_arr, percentage)
+        rayleigh_window_values(self, width, height, img_arr, percentage, type)
     elif action == 'exponential': #multiplicativo
-        exponential_window_values(self, width, height, img_arr, percentage)
+        exponential_window_values(self, width, height, img_arr, percentage, type)
     elif action == 'salt_and_pepper':
-        sap_window_values(self, width, height, img_arr, percentage)
+        sap_window_values(self, width, height, img_arr, percentage, type)
         print("")
     else:
         print("All")
 
-def gaussian_window_values(self, width, height, img_arr, percentage):
+def gaussian_window_values(self, width, height, img_arr, percentage, type):
     self.g_win = Toplevel()
     self.g_win.minsize(width=200, height=140)
     self.g_win.title("Gaussian Values")
@@ -294,10 +336,10 @@ def gaussian_window_values(self, width, height, img_arr, percentage):
     self.sigma_val = Entry(self.g_win)
     self.sigma_val.pack()
 
-    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_gaussian_window(self, width, height, img_arr, percentage, float(self.mu_val.get()), float(self.sigma_val.get())))
+    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_gaussian_window(self, width, height, img_arr, percentage, float(self.mu_val.get()), float(self.sigma_val.get()), type))
     self.ok.pack()
 
-def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma):
+def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma, type):
     tot_pixels = int((width * height) * (percentage/100))
     print("w: " + str(width))
     print("h: " + str(height))
@@ -317,9 +359,9 @@ def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma):
         elif img_arr[ranx][rany] > 255:
             img_arr[ranx][rany] = 255
 
-    matrix_to_window(self, img_arr, "Gaussian " + str(percentage) + "%" )
+    matrix_to_window(self, img_arr, "Gaussian " + str(percentage) + "%", type )
 
-def rayleigh_window_values(self, width, height, img_arr, percentage):
+def rayleigh_window_values(self, width, height, img_arr, percentage, type):
     self.g_win = Toplevel()
     self.g_win.minsize(width=200, height=140)
     self.g_win.title("Rayleigh Values")
@@ -329,10 +371,10 @@ def rayleigh_window_values(self, width, height, img_arr, percentage):
     self.xi_val = Entry(self.g_win)
     self.xi_val.pack()
 
-    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_rayleigh_window(self, width, height, img_arr, percentage, float(self.xi_val.get())))
+    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_rayleigh_window(self, width, height, img_arr, percentage, float(self.xi_val.get()), type))
     self.ok.pack()
 
-def ret_rayleigh_window(self, width, height, img_arr, percentage, xi):
+def ret_rayleigh_window(self, width, height, img_arr, percentage, xi, type):
     tot_pixels = int((width * height) * (percentage/100))
     print("w: " + str(width))
     print("h: " + str(height))
@@ -351,9 +393,9 @@ def ret_rayleigh_window(self, width, height, img_arr, percentage, xi):
         elif img_arr[ranx][rany] > 255:
             img_arr[ranx][rany] = 255
 
-    matrix_to_window(self, img_arr, "Rayleigh " + str(percentage) + "%" )
+    matrix_to_window(self, img_arr, "Rayleigh " + str(percentage) + "%", type)
 
-def exponential_window_values(self, width, height, img_arr, percentage):
+def exponential_window_values(self, width, height, img_arr, percentage, type):
     self.g_win = Toplevel()
     self.g_win.minsize(width=200, height=140)
     self.g_win.title("Exponential Values")
@@ -363,10 +405,10 @@ def exponential_window_values(self, width, height, img_arr, percentage):
     self.lam_val = Entry(self.g_win)
     self.lam_val.pack()
 
-    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_exponential_window(self, width, height, img_arr, percentage, float(self.lam_val.get())))
+    self.ok = Button(self.g_win, text="OK", width=10, height=1, command=lambda: ret_exponential_window(self, width, height, img_arr, percentage, float(self.lam_val.get()), type))
     self.ok.pack()
 
-def ret_exponential_window(self, width, height, img_arr, percentage, lam):
+def ret_exponential_window(self, width, height, img_arr, percentage, lam, type):
     tot_pixels = int((width * height) * (percentage/100))
     print("w: " + str(width))
     print("h: " + str(height))
@@ -385,7 +427,7 @@ def ret_exponential_window(self, width, height, img_arr, percentage, lam):
         elif img_arr[ranx][rany] > 255:
             img_arr[ranx][rany] = 255
 
-    matrix_to_window(self, img_arr, "Exponential " + str(percentage) + "%" )
+    matrix_to_window(self, img_arr, "Exponential " + str(percentage) + "%", type)
 
 def get_pixels(self, percentage, action):
     if action=='salt_and_pepper':
@@ -404,7 +446,7 @@ def get_pixels(self, percentage, action):
 
     matrix_to_window(self, img_arr, action + " " + str(percentage) + "%")
 
-def sap_window_values(self, width, height, img_arr, percentage):
+def sap_window_values(self, width, height, img_arr, percentage, type):
     p0 = np.random.rand()
     p1 = 1 - p0
 
@@ -420,7 +462,7 @@ def sap_window_values(self, width, height, img_arr, percentage):
         elif x >= p1:
             img_arr[ranx][rany] = 255
 
-    matrix_to_window(self, img_arr, "Salt and Pepper " + str(percentage) + "%")
+    matrix_to_window(self, img_arr, "Salt and Pepper " + str(percentage) + "%", type)
 
 def err_msg(message):
     window = Tk()

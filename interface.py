@@ -30,6 +30,7 @@ class MyFirstGUI:
         editmenu.add_command(label="To HSV", command=lambda: actions.rgb_to_hsv(self))
         editmenu.add_separator()
         editmenu.add_command(label="Operations", command=lambda: actions.opr(self))
+        editmenu.add_command(label="Negative", command=lambda: actions.to_negative(self))
         editmenu.add_command(label="Scalar Mult", command=lambda: actions.scalar_mult_textbox(self))
         menubar.add_cascade(label="Edit", menu=editmenu)
 
