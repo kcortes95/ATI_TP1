@@ -96,8 +96,11 @@ def do_clear(self):
     print("Clear canvas done")
 
 def load_image_on_canvas(self, matrix):
-    height, width = matrix.shape
-    img = Image.fromarray(matrix, 'L')
+    if len(matrix.shape) == 2:
+        height, width = matrix.shape
+    else:
+        height, width, depth = matrix.shape
+    img = Image.fromarray(matrix)
     photo = ImageTk.PhotoImage(img)
     self.canvas.image = photo
     self.canvas.true_image = img
@@ -131,7 +134,8 @@ def to_negative(self):
         type = 'L'
 
     img_neg = 255 - ar
-    matrix_to_window(self, img_neg, "Negative", type)
+    load_image_on_canvas(self,img_neg)
+    # matrix_to_window(self, img_neg, "Negative", type)
 
 def get_img_type(self):
     true_img = self.canvas.true_image
@@ -555,6 +559,13 @@ def weighted_mean_filter(self, size):
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
+def weighted_median_filter(self, size):
+    m = mesh.weighted_median_filter(np.array(self.canvas.true_image), size)
+    self.canvas.true_image = Image.fromarray(m)
+    self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+    self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+
 def gauss_filter(self, size):
     m = mesh.gauss_filter(np.array(self.canvas.true_image), size, 10)
     self.canvas.true_image = Image.fromarray(m)
@@ -572,3 +583,7 @@ def median_filter(self,size):
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+
+def linear_transform(matrix):
+    return np.interp(matrix,[np.min(matrix),np.max(matrix)],[0,255])
