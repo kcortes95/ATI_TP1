@@ -32,6 +32,7 @@ class MyFirstGUI:
         editmenu.add_command(label="Operations", command=lambda: actions.opr(self))
         editmenu.add_command(label="Negative", command=lambda: actions.to_negative(self))
         editmenu.add_command(label="Scalar Mult", command=lambda: actions.scalar_mult_textbox(self))
+        editmenu.add_command(label="Gamma", command=lambda: actions.gamma_textbox(self))        
         menubar.add_cascade(label="Edit", menu=editmenu)
 
         datamenu = Menu(menubar,tearoff=0)
@@ -61,9 +62,7 @@ class MyFirstGUI:
         noise_menu.add_command(label="Rayleigh", command=lambda: actions.percentage_textbox(self, 'rayleigh'))
         noise_menu.add_command(label="Exponential", command=lambda: actions.percentage_textbox(self, 'exponential'))
         noise_menu.add_command(label="Salt & Pepper", command=lambda: actions.percentage_textbox(self, 'salt_and_pepper'))
-        noise_menu.add_command(label="All", command=lambda: actions.percentage_textbox(self, 'all'))
         menubar.add_cascade(menu=noise_menu, label="Noise")
-
 
         master.config(menu=menubar)
         self.menubar = menubar

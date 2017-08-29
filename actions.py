@@ -138,7 +138,20 @@ def to_negative(self):
     # matrix_to_window(self, img_neg, "Negative", type)
 
 def get_img_type(self):
-    true_img = self.canvas.true_image
+    return get_img_type_from_canvas(self, self.canvas)
+    # true_img = self.canvas.true_image
+    # pixels = true_img.load()
+    #
+    # type = 'RGB'
+    # try:
+    #     len(pixels[0, 0])
+    # except TypeError:
+    #     type = 'L'
+    #
+    # return type
+
+def get_img_type_from_canvas(self, canv):
+    true_img = canv.true_image
     pixels = true_img.load()
 
     type = 'RGB'
@@ -163,18 +176,26 @@ def opr(self):
 
     b1 = Button(self.new_window, text="Select IMG 1", command=lambda: kevin_open(self, canvas, matrix_img1, 1, 0))
     b2 = Button(self.new_window, text="Select IMG 2", command=lambda: kevin_open(self, canvas2, matrix_img2, 1, 1))
-    check = Button(self.new_window, text="DONE", command=lambda: operations(self, np.array(canvas.true_image,dtype=np.uint8), np.array(canvas2.true_image,dtype=np.uint8)))
+    check = Button(self.new_window, text="DONE", command=lambda: operations(self, canvas, canvas2))
 
     b1.grid(row=0,column=0)
     b2.grid(row=0,column=1)
     check.place(relx=0.5, rely=1, relwidth=1 ,anchor="s", bordermode="outside")
 
-def operations(self, matrix_img1, matrix_img2):
-    sum(self, matrix_img1, matrix_img2, "SUM")
-    sum(self, matrix_img1, -1*np.array(matrix_img2), "SUBSTRACT")
-    multiply(self, matrix_img1, matrix_img2, "MULTIPLY")
+def operations(self, canvas1, canvas2):
 
-def sum(self, matrix_img1, matrix_img2, title):
+    type1 = get_img_type_from_canvas(self, canvas1)
+    type2 = get_img_type_from_canvas(self, canvas2)
+
+    if type1 != type2:
+        err_msg('You cant operate with color and blanck and white simultaneously.')
+        raise ValueError('A very specific bad thing happened')
+
+    sum(self, np.array(canvas1.true_image,dtype=np.uint8), np.array(canvas2.true_image,dtype=np.uint8), "SUM", type1)
+    sum(self, np.array(canvas1.true_image,dtype=np.uint8), -1*np.array(canvas2.true_image,dtype=np.uint8), "SUBSTRACT", type1)
+    multiply(self, np.array(canvas1.true_image,dtype=np.uint8), np.array(canvas2.true_image,dtype=np.uint8), "MULTIPLY", type1)
+
+def sum(self, matrix_img1, matrix_img2, title, type):
 
     if matrix_img1.shape == matrix_img2.shape:
         out = matrix_img1 + matrix_img2
@@ -187,10 +208,10 @@ def sum(self, matrix_img1, matrix_img2, title):
         out[:matrix_img2.shape[0], :matrix_img2.shape[1]] += matrix_img2
 
     #FALTA NORMALIZAR OUT
-    matrix_to_window(self, out, title)
+    matrix_to_window(self, out, title, type)
     return out
 
-def multiply(self, matrix_img1, matrix_img2, title):
+def multiply(self, matrix_img1, matrix_img2, title, type):
 
     if matrix_img1.shape == matrix_img2.shape:
         out = matrix_img1 + matrix_img2
@@ -207,26 +228,8 @@ def multiply(self, matrix_img1, matrix_img2, title):
         out = np.array(out1) * np.array(out2)
 
     #FALTA NORMALIZAR OUT
-    matrix_to_window(self, out, title)
+    matrix_to_window(self, out, title, type)
     return out
-
-#COLOR: RGB, B&W: L
-# def matrix_to_window(self, out, title):
-#     height = out.shape[0]
-#     width = out.shape[1]
-
-#     self.result_window = Toplevel()
-#     self.result_window.minsize(width=width, height=height)
-#     self.result_window.title(title)
-#     canvas_result = Canvas(self.result_window, height=height, width=width)
-
-#     img = Image.fromarray(out, 'L')
-#     photo = ImageTk.PhotoImage(img)
-#     canvas_result.image = photo
-#     canvas_result.true_image = img
-#     canvas_result.configure(width=width, height=height)
-#     canvas_result.create_image((0, 0), image=photo, anchor='nw')
-#     canvas_result.grid(row=0,column=0)
 
 def matrix_to_window(self, out, title, type):
     height = out.shape[0]
@@ -237,13 +240,18 @@ def matrix_to_window(self, out, title, type):
     self.result_window.title(title)
     canvas_result = Canvas(self.result_window, height=height, width=width)
 
-    img = Image.fromarray(out)
+    # img = Image.fromarray(np.array(out))
+    # img = Image.fromarray(out, mode=type)
+    img = Image.fromarray(np.array(out, dtype=np.uint8))
+
+    print("type: " + type)
+
     photo = ImageTk.PhotoImage(img)
     canvas_result.image = photo
     canvas_result.true_image = img
     canvas_result.configure(width=width, height=height)
     canvas_result.create_image((0, 0), image=photo, anchor='nw')
-    canvas_result.grid(row=0,column=0)     
+    canvas_result.grid(row=0,column=0)
 
 def kevin_open(self, canvas, matrix, r, c):
     filename = filedialog.askopenfilename()
@@ -311,8 +319,6 @@ def generic_window(self, percentage, action):
     img_arr = img_arr.astype(np.int16)
     print(img_arr)
 
-
-
     type = get_img_type(self)
 
     if percentage < 0 or percentage > 100:
@@ -357,16 +363,23 @@ def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma, typ
     print("mu: " + str(mu))
     print("sigma: " + str(sigma))
 
+    print("**************************")
+    print(str(np.array(img_arr[0][0])))
+    print(str(img_arr[0][1]))
+    print(str(img_arr[1][0]))
+    print(str(img_arr[1][1]))
+    print("**************************")
+
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
         # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
-        img_arr[ranx][rany] += random.gauss(mu, sigma)
+        img_arr[ranx][rany] = random.gauss(mu,sigma) + np.array(img_arr[ranx][rany])
 
-        if img_arr[ranx][rany] < 0:
-            img_arr[ranx][rany] = 0
-        elif img_arr[ranx][rany] > 255:
-            img_arr[ranx][rany] = 255
+        # if img_arr[ranx][rany] < 0:
+        #     img_arr[ranx][rany] = 0
+        # elif img_arr[ranx][rany] > 255:
+        #     img_arr[ranx][rany] = 255
 
     matrix_to_window(self, img_arr, "Gaussian " + str(percentage) + "%", type )
 
@@ -389,18 +402,19 @@ def ret_rayleigh_window(self, width, height, img_arr, percentage, xi, type):
     print("h: " + str(height))
     print("tot_pixels: " + str(tot_pixels))
     print("%: " + str(percentage))
-    print("mu: " + str(xi))
+    print("xi: " + str(xi))
 
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
         # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
-        img_arr[ranx][rany] *= myrand.rayleight_random(xi)
+        # img_arr[ranx][rany] *= myrand.rayleight_random(xi)
+        img_arr[ranx][rany] = myrand.rayleight_random(xi) * np.array(img_arr[ranx][rany])
 
-        if img_arr[ranx][rany] < 0:
-            img_arr[ranx][rany] = 0
-        elif img_arr[ranx][rany] > 255:
-            img_arr[ranx][rany] = 255
+        # if img_arr[ranx][rany] < 0:
+        #     img_arr[ranx][rany] = 0
+        # elif img_arr[ranx][rany] > 255:
+        #     img_arr[ranx][rany] = 255
 
     matrix_to_window(self, img_arr, "Rayleigh " + str(percentage) + "%", type)
 
@@ -429,31 +443,15 @@ def ret_exponential_window(self, width, height, img_arr, percentage, lam, type):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
         # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
-        img_arr[ranx][rany] *= myrand.exponential_random(lam)
+        # img_arr[ranx][rany] *= myrand.exponential_random(lam)
+        img_arr[ranx][rany] = myrand.exponential_random(lam) * np.array(img_arr[ranx][rany])
 
-        if img_arr[ranx][rany] < 0:
-            img_arr[ranx][rany] = 0
-        elif img_arr[ranx][rany] > 255:
-            img_arr[ranx][rany] = 255
+        # if img_arr[ranx][rany] < 0:
+        #     img_arr[ranx][rany] = 0
+        # elif img_arr[ranx][rany] > 255:
+        #     img_arr[ranx][rany] = 255
 
     matrix_to_window(self, img_arr, "Exponential " + str(percentage) + "%", type)
-
-def get_pixels(self, percentage, action):
-    if action=='salt_and_pepper':
-        salt_and_pepper(self, img_arr,mod_tot_pixels, width, height)
-    else:
-        for i in range(mod_tot_pixels):
-            ranx = random.randint(0, width-1)
-            rany = random.randint(0, height-1)
-            # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
-            img_arr[ranx][rany] = probabilistic_function(self, action, img_arr[ranx][rany])
-
-            if img_arr[ranx][rany] < 0:
-                img_arr[ranx][rany] = 0
-            elif img_arr[ranx][rany] > 255:
-                img_arr[ranx][rany] = 255
-
-    matrix_to_window(self, img_arr, action + " " + str(percentage) + "%")
 
 def sap_window_values(self, width, height, img_arr, percentage, type):
     p0 = np.random.rand()
@@ -477,6 +475,26 @@ def err_msg(message):
     window = Tk()
     window.wm_withdraw()
     msgbox.showinfo(title="Error", message=message)
+
+def gamma_textbox(self):
+    self.new_window = Toplevel()
+    self.new_window.minsize(width=200, height=70)
+    self.new_window.title("Enter gamma")
+    self.l=Label(self.new_window,text="Enter gamma number")
+    self.l.pack()
+    self.per = Entry(self.new_window)
+    self.per.pack()
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: gamma_function(self, float(self.per.get())))
+    self.ok.pack()
+
+def gamma_function(self, gam):
+    type = get_img_type(self)
+    print(type)
+    print("lambda " + str(gam))
+    c = 255**(1-gam)
+    img_arr = c * (np.array(self.canvas.true_image, dtype=np.uint8)**gam)
+    # load_image_on_canvas(self, img_arr) #FUCK, con esto me rompe
+    matrix_to_window(self, img_arr, "Gamma Function", type)
 
 #--------------------KEVIN--------------------
 
@@ -552,13 +570,11 @@ def getf2(value, r1, r2, s1, s2):
 def getf1(value, r1, s1):
     return s1/r1*value
 
-
 def mean_filter(self, size):
     m = mesh.mean_filter(np.array(self.canvas.true_image), size)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
 
 def weighted_mean_filter(self, size):
     m = mesh.weighted_mean_filter(np.array(self.canvas.true_image), size)
@@ -566,13 +582,11 @@ def weighted_mean_filter(self, size):
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
-
 def weighted_median_filter(self, size):
     m = mesh.weighted_median_filter(np.array(self.canvas.true_image), size)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
 
 def gauss_filter(self, size, sigma):
     m = mesh.gauss_filter(np.array(self.canvas.true_image), size, sigma)
@@ -580,20 +594,17 @@ def gauss_filter(self, size, sigma):
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
-
 def highpass_filter(self,size):
     m = mesh.highpass_filter(np.array(self.canvas.true_image), size)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
-
 def median_filter(self,size):
     m = mesh.median_filter(np.array(self.canvas.true_image), size)
     self.canvas.true_image = Image.fromarray(m)
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
 
 def linear_transform(matrix):
     return np.interp(matrix,[np.min(matrix),np.max(matrix)],[0,255])
