@@ -139,16 +139,6 @@ def to_negative(self):
 
 def get_img_type(self):
     return get_img_type_from_canvas(self, self.canvas)
-    # true_img = self.canvas.true_image
-    # pixels = true_img.load()
-    #
-    # type = 'RGB'
-    # try:
-    #     len(pixels[0, 0])
-    # except TypeError:
-    #     type = 'L'
-    #
-    # return type
 
 def get_img_type_from_canvas(self, canv):
     true_img = canv.true_image
@@ -165,7 +155,7 @@ def get_img_type_from_canvas(self, canv):
 def opr(self):
     self.new_window = Toplevel()
     self.new_window.minsize(width=480, height=360)
-    self.new_window.title("Add")
+    self.new_window.title("Operations")
 
     canvas = Canvas(self.new_window,height=300,width=300)
     canvas2 = Canvas(self.new_window, height=300, width=300)
@@ -195,6 +185,7 @@ def operations(self, canvas1, canvas2):
     sum(self, np.array(canvas1.true_image,dtype=np.uint8), -1*np.array(canvas2.true_image,dtype=np.uint8), "SUBSTRACT", type1)
     multiply(self, np.array(canvas1.true_image,dtype=np.uint8), np.array(canvas2.true_image,dtype=np.uint8), "MULTIPLY", type1)
 
+#Es la funcion para la suma, aunque la uso tambien para la resta
 def sum(self, matrix_img1, matrix_img2, title, type):
 
     if matrix_img1.shape == matrix_img2.shape:
@@ -207,8 +198,9 @@ def sum(self, matrix_img1, matrix_img2, title, type):
         out[:matrix_img1.shape[0], :matrix_img1.shape[1]] = matrix_img1
         out[:matrix_img2.shape[0], :matrix_img2.shape[1]] += matrix_img2
 
-    #FALTA NORMALIZAR OUT
-    matrix_to_window(self, out, title, type)
+    matrix_to_window(self, linear_transform(out), title + " CON TL", type)
+    #matrix_to_window(self, out, title + " SIN TL", type)
+    
     return out
 
 def multiply(self, matrix_img1, matrix_img2, title, type):
@@ -228,7 +220,7 @@ def multiply(self, matrix_img1, matrix_img2, title, type):
         out = np.array(out1) * np.array(out2)
 
     #FALTA NORMALIZAR OUT
-    matrix_to_window(self, out, title, type)
+    matrix_to_window(self, linear_transform(out), title, type)
     return out
 
 def matrix_to_window(self, out, title, type):
@@ -240,8 +232,6 @@ def matrix_to_window(self, out, title, type):
     self.result_window.title(title)
     canvas_result = Canvas(self.result_window, height=height, width=width)
 
-    # img = Image.fromarray(np.array(out))
-    # img = Image.fromarray(out, mode=type)
     img = Image.fromarray(np.array(out, dtype=np.uint8))
 
     print("type: " + type)
@@ -252,6 +242,26 @@ def matrix_to_window(self, out, title, type):
     canvas_result.configure(width=width, height=height)
     canvas_result.create_image((0, 0), image=photo, anchor='nw')
     canvas_result.grid(row=0,column=0)
+
+    menu = Menu(self.result_window)
+    self.result_window.config(menu=menu)
+    filemenu = Menu(menu, tearoff=0)
+    menu.add_cascade(label="File", menu=filemenu)
+    filemenu.add_command(label="Save", command=lambda: save(self.result_window,canvas_result))
+    filemenu.add_command(label="Load on canvas", command=lambda: to_main_canvas(self, canvas_result))
+    filemenu.add_separator()
+    filemenu.add_command(label="Exit", command=lambda: self.result_window.quit)    
+
+def pscreen(self):
+    print("Hola mundo")
+
+def to_main_canvas(self, can):
+    err_msg("Not implemented yet. LUCAAAAS")
+
+def save(window, can):
+    filename = filedialog.asksaveasfilename(parent=window)
+    can.true_image.save(filename)
+    print(filename)    
 
 def kevin_open(self, canvas, matrix, r, c):
     filename = filedialog.askopenfilename()
@@ -293,6 +303,7 @@ def scalar_mult(self, scale):
     width, height = self.canvas.true_image.size
     ar = np.array(self.canvas.true_image, dtype=np.uint8)
     ar = int(scale) * ar
+    ar = linear_transform(ar)
     img_ar = Image.fromarray(ar)
     img = ImageTk.PhotoImage(img_ar)
     self.canvas.true_image = img_ar
@@ -373,15 +384,9 @@ def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma, typ
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
-        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
         img_arr[ranx][rany] = random.gauss(mu,sigma) + np.array(img_arr[ranx][rany])
 
-        # if img_arr[ranx][rany] < 0:
-        #     img_arr[ranx][rany] = 0
-        # elif img_arr[ranx][rany] > 255:
-        #     img_arr[ranx][rany] = 255
-
-    matrix_to_window(self, img_arr, "Gaussian " + str(percentage) + "%", type )
+    matrix_to_window(self, linear_transform(img_arr), "Gaussian " + str(percentage) + "%", type )
 
 def rayleigh_window_values(self, width, height, img_arr, percentage, type):
     self.g_win = Toplevel()
@@ -407,16 +412,9 @@ def ret_rayleigh_window(self, width, height, img_arr, percentage, xi, type):
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
-        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
-        # img_arr[ranx][rany] *= myrand.rayleight_random(xi)
         img_arr[ranx][rany] = myrand.rayleight_random(xi) * np.array(img_arr[ranx][rany])
 
-        # if img_arr[ranx][rany] < 0:
-        #     img_arr[ranx][rany] = 0
-        # elif img_arr[ranx][rany] > 255:
-        #     img_arr[ranx][rany] = 255
-
-    matrix_to_window(self, img_arr, "Rayleigh " + str(percentage) + "%", type)
+    matrix_to_window(self, linear_transform(img_arr), "Rayleigh " + str(percentage) + "%", type)
 
 def exponential_window_values(self, width, height, img_arr, percentage, type):
     self.g_win = Toplevel()
@@ -442,16 +440,9 @@ def ret_exponential_window(self, width, height, img_arr, percentage, lam, type):
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
-        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
-        # img_arr[ranx][rany] *= myrand.exponential_random(lam)
         img_arr[ranx][rany] = myrand.exponential_random(lam) * np.array(img_arr[ranx][rany])
 
-        # if img_arr[ranx][rany] < 0:
-        #     img_arr[ranx][rany] = 0
-        # elif img_arr[ranx][rany] > 255:
-        #     img_arr[ranx][rany] = 255
-
-    matrix_to_window(self, img_arr, "Exponential " + str(percentage) + "%", type)
+    matrix_to_window(self, linear_transform(img_arr), "Exponential " + str(percentage) + "%", type)
 
 def sap_window_values(self, width, height, img_arr, percentage, type):
     p0 = np.random.rand()
@@ -495,6 +486,18 @@ def gamma_function(self, gam):
     img_arr = c * (np.array(self.canvas.true_image, dtype=np.uint8)**gam)
     # load_image_on_canvas(self, img_arr) #FUCK, con esto me rompe
     matrix_to_window(self, img_arr, "Gamma Function", type)
+
+def din_range(self):
+    max = 253 #ESTO HAY QUE CALCULARLE EL MAXIMO DE LA IMAGEN
+    c = 255 / math.log10(1+max)
+    img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
+    width, height = self.canvas.true_image.size
+    
+    for i in range(width):
+        for j in range(height):
+            img_arr[i][j] = math.log10(img_arr[i][j] + 1)
+
+    matrix_to_window(self, linear_transform(img_arr), "Dinamic Range", 'L')
 
 #--------------------KEVIN--------------------
 
