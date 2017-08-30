@@ -200,7 +200,7 @@ def sum(self, matrix_img1, matrix_img2, title, type):
 
     matrix_to_window(self, linear_transform(out), title + " CON TL", type)
     #matrix_to_window(self, out, title + " SIN TL", type)
-    
+
     return out
 
 def multiply(self, matrix_img1, matrix_img2, title, type):
@@ -250,7 +250,7 @@ def matrix_to_window(self, out, title, type):
     filemenu.add_command(label="Save", command=lambda: save(self.result_window,canvas_result))
     filemenu.add_command(label="Load on canvas", command=lambda: to_main_canvas(self, canvas_result))
     filemenu.add_separator()
-    filemenu.add_command(label="Exit", command=lambda: self.result_window.quit)    
+    filemenu.add_command(label="Exit", command=lambda: self.result_window.quit)
 
 def pscreen(self):
     print("Hola mundo")
@@ -261,7 +261,7 @@ def to_main_canvas(self, can):
 def save(window, can):
     filename = filedialog.asksaveasfilename(parent=window)
     can.true_image.save(filename)
-    print(filename)    
+    print(filename)
 
 def kevin_open(self, canvas, matrix, r, c):
     filename = filedialog.askopenfilename()
@@ -461,6 +461,7 @@ def sap_window_values(self, width, height, img_arr, percentage, type):
             img_arr[ranx][rany] = 255
 
     matrix_to_window(self, img_arr, "Salt and Pepper " + str(percentage) + "%", type)
+    # matrix_to_window(self, linear_transform(img_arr), "Salt and Pepper" + str(percentage) + "%", type)
 
 def err_msg(message):
     window = Tk()
@@ -485,19 +486,31 @@ def gamma_function(self, gam):
     c = 255**(1-gam)
     img_arr = c * (np.array(self.canvas.true_image, dtype=np.uint8)**gam)
     # load_image_on_canvas(self, img_arr) #FUCK, con esto me rompe
-    matrix_to_window(self, img_arr, "Gamma Function", type)
+    matrix_to_window(self, linear_transform(img_arr), "Gamma Function", type)
 
 def din_range(self):
-    max = 253 #ESTO HAY QUE CALCULARLE EL MAXIMO DE LA IMAGEN
-    c = 255 / math.log10(1+max)
-    img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
-    width, height = self.canvas.true_image.size
-    
-    for i in range(width):
-        for j in range(height):
-            img_arr[i][j] = math.log10(img_arr[i][j] + 1)
 
-    matrix_to_window(self, linear_transform(img_arr), "Dinamic Range", 'L')
+    img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
+    max = np.amax(img_arr) #ESTO HAY QUE CALCULARLE EL MAXIMO DE LA IMAGEN
+    print("RANGO DINAMICO. MAX: " + str(max))
+
+    c = 255 / math.log10(1+max)
+    width, height = self.canvas.true_image.size
+
+    type = get_img_type(self)
+
+    if type=='L':
+        for i in range(width):
+            for j in range(height):
+                img_arr[j][i] = math.log10(img_arr[j][i] + 1)
+    else:
+        for i in range(width):
+            for j in range(height):
+                img_arr[j][i][0] = math.log10(img_arr[j][i][0] + 1)
+                img_arr[j][i][1] = math.log10(img_arr[j][i][1] + 1)
+                img_arr[j][i][2] = math.log10(img_arr[j][i][2] + 1)
+
+    matrix_to_window(self, linear_transform(img_arr), "Dinamic Range", type)
 
 #--------------------KEVIN--------------------
 
