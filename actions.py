@@ -259,7 +259,10 @@ def pscreen(self):
     print("Hola mundo")
 
 def to_main_canvas(self, can):
-    err_msg("Not implemented yet. LUCAAAAS")
+    self.canvas.true_image = can.true_image
+    self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+    self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
+
 
 def save(window, can):
     filename = filedialog.asksaveasfilename(parent=window)

@@ -5,8 +5,8 @@ import generation as gen
 import json
 import numpy as np
 
-class MyFirstGUI:
 
+class MyFirstGUI:
     def __init__(self, master):
         self.master = master
         master.minsize(width=640, height=480)
@@ -33,14 +33,14 @@ class MyFirstGUI:
         editmenu.add_command(label="Negative", command=lambda: actions.to_negative(self))
         editmenu.add_command(label="Scalar Mult", command=lambda: actions.scalar_mult_textbox(self))
         editmenu.add_command(label="Gamma", command=lambda: actions.gamma_textbox(self))
-        editmenu.add_command(label="Din. Range", command=lambda: actions.din_range(self,None))
+        editmenu.add_command(label="Din. Range", command=lambda: actions.din_range(self, None))
         menubar.add_cascade(label="Edit", menu=editmenu)
 
-        datamenu = Menu(menubar,tearoff=0)
+        datamenu = Menu(menubar, tearoff=0)
         datamenu.add_command(label="Histogram", command=lambda: actions.show_hist(self))
         datamenu.add_command(label="Threshold", command=lambda: self.umbral(master))
         datamenu.add_command(label="Equalize", command=lambda: actions.equalize(self))
-        datamenu.add_command(label="Contrast",command=lambda: self.contrast(master))
+        datamenu.add_command(label="Contrast", command=lambda: self.contrast(master))
         menubar.add_cascade(menu=datamenu, label="Data")
 
         gimagemenu = Menu(menubar, tearoff=0)
@@ -52,7 +52,7 @@ class MyFirstGUI:
         filter_menu = Menu(menubar, tearoff=0)
         filter_menu.add_command(label="Mean", command=lambda: self.filter(actions.mean_filter))
         filter_menu.add_command(label="Median", command=lambda: self.filter(actions.median_filter))
-        filter_menu.add_command(label="Gauss", command=lambda : self.gaussian_filter(master))
+        filter_menu.add_command(label="Gauss", command=lambda: self.gaussian_filter(master))
         filter_menu.add_command(label="Weighted Mean", command=lambda: actions.weighted_mean_filter(self, 3))
         filter_menu.add_command(label="Weighted Median", command=lambda: actions.weighted_median_filter(self, 3))
         filter_menu.add_command(label="High-Pass", command=lambda: actions.highpass_filter(self, 3))
@@ -62,7 +62,8 @@ class MyFirstGUI:
         noise_menu.add_command(label="Gaussian", command=lambda: actions.percentage_textbox(self, 'gaussian'))
         noise_menu.add_command(label="Rayleigh", command=lambda: actions.percentage_textbox(self, 'rayleigh'))
         noise_menu.add_command(label="Exponential", command=lambda: actions.percentage_textbox(self, 'exponential'))
-        noise_menu.add_command(label="Salt & Pepper", command=lambda: actions.percentage_textbox(self, 'salt_and_pepper'))
+        noise_menu.add_command(label="Salt & Pepper",
+                               command=lambda: actions.percentage_textbox(self, 'salt_and_pepper'))
         menubar.add_cascade(menu=noise_menu, label="Noise")
 
         master.config(menu=menubar)
@@ -123,7 +124,7 @@ class MyFirstGUI:
         self.canvas.bind("<Button-3>", set_pixel)
         self.canvas.bind("<B1-Motion>", set_area)
         self.canvas.bind("<ButtonRelease-1>", release_left)
-        self.canvas.grid(column=0,row=0)
+        self.canvas.grid(column=0, row=0)
         self.canvas.rect = self.canvas.create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
 
     def save(self):
@@ -151,10 +152,10 @@ class MyFirstGUI:
             self.accept.grid_forget()
 
         self.canvas.saved_image = self.canvas.true_image
-        w = Scale(self.label_frame, from_=0, to=255, orient="h")
+        w = Scale(self.label_frame, from_=0, to=255, orient="h", length=255)
         w.bind("<ButtonRelease-1>", set_umbral)
         w.set(128)
-        w.grid(row=0, column=0,columnspan=2)
+        w.grid(row=0, column=0, columnspan=2)
         self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
         self.accept.grid(row=1, column=0)
         self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
@@ -184,11 +185,11 @@ class MyFirstGUI:
             self.accept.grid_forget()
 
         self.canvas.saved_image = self.canvas.true_image
-        w1 = Scale(self.label_frame, from_=0, to=255, orient="h", label="S1")
+        w1 = Scale(self.label_frame, from_=0, to=255, orient="h", label="S1", length=255)
         w1.bind("<ButtonRelease-1>", set_contrast)
         w1.set(128)
         w1.grid(row=0, column=0)
-        w2 = Scale(self.label_frame, from_=0, to=255, orient="h", label="S2")
+        w2 = Scale(self.label_frame, from_=0, to=255, orient="h", label="S2", length=255)
         w2.bind("<ButtonRelease-1>", set_contrast)
         w2.set(128)
         w2.grid(row=0, column=1)
@@ -219,17 +220,17 @@ class MyFirstGUI:
             self.accept.grid_forget()
 
         l = Label(self.label_frame, text="Size")
-        l.grid(row=0,column = 0)
+        l.grid(row=0, column=0)
         w = Entry(self.label_frame)
         w.grid(row=0, column=1)
         l2 = Label(self.label_frame, text="Desv")
-        l2.grid(row=0,column=2)
+        l2.grid(row=0, column=2)
         w2 = Entry(self.label_frame)
         w2.grid(row=0, column=3)
         self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
-        self.accept.grid(row=1, column=0,columnspan=2)
+        self.accept.grid(row=1, column=0, columnspan=2)
         self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
-        self.cancel.grid(row=1, column=2,columnspan=2)
+        self.cancel.grid(row=1, column=2, columnspan=2)
         self.w = w
         self.w2 = w2
         self.l = l
