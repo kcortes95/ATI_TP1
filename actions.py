@@ -262,6 +262,7 @@ def to_main_canvas(self, can):
     self.canvas.true_image = can.true_image
     self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
     self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
+    self.canvas.configure(width=can.true_image.size[0], height=can.true_image.size[1])
 
 
 def save(window, can):

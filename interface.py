@@ -47,6 +47,10 @@ class MyFirstGUI:
         gimagemenu.add_command(label="Circle", command=lambda: gen.generate_circle(self))
         gimagemenu.add_command(label="Square", command=lambda: gen.generate_square(self))
         gimagemenu.add_command(label="Degrade", command=lambda: gen.generate_degrade(self))
+        gimagemenu.add_command(label="Rayleigh", command=lambda: gen.generate_rayleigh(self))
+        gimagemenu.add_command(label="Gauss", command=lambda: gen.generate_gaussian(self))
+        gimagemenu.add_command(label="Exponential", command=lambda: gen.generate_exponential(self))
+        gimagemenu.add_command(label="Salt and Peper", command=lambda: gen.generate_SAP(self))
         menubar.add_cascade(label="Generate", menu=gimagemenu)
 
         filter_menu = Menu(menubar, tearoff=0)
