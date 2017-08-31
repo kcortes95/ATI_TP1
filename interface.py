@@ -33,7 +33,7 @@ class MyFirstGUI:
         editmenu.add_command(label="Negative", command=lambda: actions.to_negative(self))
         editmenu.add_command(label="Scalar Mult", command=lambda: actions.scalar_mult_textbox(self))
         editmenu.add_command(label="Gamma", command=lambda: actions.gamma_textbox(self))
-        editmenu.add_command(label="Din. Range", command=lambda: actions.din_range(self))                
+        editmenu.add_command(label="Din. Range", command=lambda: actions.din_range(self,None))
         menubar.add_cascade(label="Edit", menu=editmenu)
 
         datamenu = Menu(menubar,tearoff=0)

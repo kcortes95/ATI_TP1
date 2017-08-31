@@ -304,9 +304,9 @@ def scalar_mult_textbox(self):
 def scalar_mult(self, scale):
     img2 = self.canvas.true_image.load()
     width, height = self.canvas.true_image.size
-    ar = np.array(self.canvas.true_image, dtype=np.uint8)
-    ar = int(scale) * ar
-    ar = linear_transform(ar)
+    ar = np.array(self.canvas.true_image, dtype=np.int32)
+    ar = float(scale) * ar
+    ar = din_range(self, ar)
     img_ar = Image.fromarray(ar)
     img = ImageTk.PhotoImage(img_ar)
     self.canvas.true_image = img_ar
@@ -491,29 +491,43 @@ def gamma_function(self, gam):
     # load_image_on_canvas(self, img_arr) #FUCK, con esto me rompe
     matrix_to_window(self, linear_transform(img_arr), "Gamma Function", type)
 
-def din_range(self):
 
-    img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
-    max = np.amax(img_arr) #ESTO HAY QUE CALCULARLE EL MAXIMO DE LA IMAGEN
+def din_range(self, matrix):
+    prtn = False
+    if matrix is None:
+        matrix = np.array(self.canvas.true_image, dtype=np.uint8)
+        prtn = True
+
+    max = np.amax(matrix) #ESTO HAY QUE CALCULARLE EL MAXIMO DE LA IMAGEN
     print("RANGO DINAMICO. MAX: " + str(max))
 
-    c = 255 / math.log10(1+max)
-    width, height = self.canvas.true_image.size
+    c = 255 / math.log(1+max)
+    if len(matrix.shape) == 2:
+        height, width = matrix.shape
+    else:
+        height, width,depth = matrix.shape
 
     type = get_img_type(self)
+    img_arr = matrix
 
-    if type=='L':
+    if type == 'L':
         for i in range(width):
             for j in range(height):
-                img_arr[j][i] = math.log10(img_arr[j][i] + 1)
+                img_arr[j][i] = c*math.log(img_arr[j][i] + 1)
     else:
         for i in range(width):
             for j in range(height):
-                img_arr[j][i][0] = math.log10(img_arr[j][i][0] + 1)
-                img_arr[j][i][1] = math.log10(img_arr[j][i][1] + 1)
-                img_arr[j][i][2] = math.log10(img_arr[j][i][2] + 1)
+                img_arr[j][i][0] = c*math.log(img_arr[j][i][0] + 1)
+                img_arr[j][i][1] = c*math.log(img_arr[j][i][1] + 1)
+                img_arr[j][i][2] = c*math.log(img_arr[j][i][2] + 1)
 
-    matrix_to_window(self, linear_transform(img_arr), "Dinamic Range", type)
+    print(img_arr)
+    img_arr = img_arr.astype(np.uint8)
+    print(np.amax(img_arr))
+    if prtn:
+        matrix_to_window(self, img_arr, "Dinamic Range", type)
+
+    return img_arr
 
 #--------------------KEVIN--------------------
 
