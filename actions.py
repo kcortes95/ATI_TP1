@@ -232,6 +232,9 @@ def matrix_to_window(self, out, title, type):
     self.result_window.title(title)
     canvas_result = Canvas(self.result_window, height=height, width=width)
 
+    # img = Image.fromarray(np.array(out))
+    # img = Image.fromarray(out, mode=type)
+    out = linear_transform(out)
     img = Image.fromarray(np.array(out, dtype=np.uint8))
 
     print("type: " + type)
@@ -325,10 +328,7 @@ def percentage_textbox(self, action):
 def generic_window(self, percentage, action):
 
     height, width = self.canvas.true_image.size
-    img_arr = np.array(self.canvas.true_image, dtype=np.uint8)
-    print(img_arr)
-    img_arr = img_arr.astype(np.int16)
-    print(img_arr)
+    img_arr = np.array(self.canvas.true_image, dtype=np.int16)
 
     type = get_img_type(self)
 
@@ -384,6 +384,7 @@ def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma, typ
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
+        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
         img_arr[ranx][rany] = random.gauss(mu,sigma) + np.array(img_arr[ranx][rany])
 
     matrix_to_window(self, linear_transform(img_arr), "Gaussian " + str(percentage) + "%", type )
@@ -412,6 +413,8 @@ def ret_rayleigh_window(self, width, height, img_arr, percentage, xi, type):
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
+        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
+        # img_arr[ranx][rany] *= myrand.rayleight_random(xi)
         img_arr[ranx][rany] = myrand.rayleight_random(xi) * np.array(img_arr[ranx][rany])
 
     matrix_to_window(self, linear_transform(img_arr), "Rayleigh " + str(percentage) + "%", type)

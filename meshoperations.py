@@ -9,9 +9,9 @@ def apply_mesh(matrix, mesh,size):
         out = np.zeros(shape,dtype=np.int16)
         for i in range(shape[2]):
             out[:, :, i] = apply_mesh_one_dimension(matrix[:, :, i], mesh, size)
-        return out
+        return actions.linear_transform(out).astype(np.uint8)
     else:
-        return apply_mesh_one_dimension(matrix,mesh,size)
+        return actions.linear_transform(apply_mesh_one_dimension(matrix,mesh,size)).astype(np.uint8)
 
 
 def apply_mesh_one_dimension(matrix, mesh, size):
@@ -42,7 +42,7 @@ def median_filter(matrix, size):
     shape = matrix.shape
     print(shape)
     if len(shape) > 2:
-        out = np.zeros(shape, dtype=np.int16)
+        out = np.zeros(shape, dtype=np.uint8)
         for i in range(shape[2]):
             out[:, :, i] = apply_median_one_dimension(matrix[:, :, i], size)
         return out
@@ -53,7 +53,7 @@ def weighted_median_filter(matrix, size):
     shape = matrix.shape
     print(shape)
     if len(shape) > 2:
-        out = np.zeros(shape, dtype=np.int16)
+        out = np.zeros(shape, dtype=np.uint8)
         for i in range(shape[2]):
             out[:, :, i] = apply_weighted_median_one_dimension(matrix[:, :, i], size)
         return out
@@ -62,7 +62,7 @@ def weighted_median_filter(matrix, size):
 
 
 def apply_weighted_median_one_dimension(matrix,size):
-    out = np.zeros(matrix.shape, dtype=np.int16)
+    out = np.zeros(matrix.shape, dtype=np.uint8)
     radius = int(size / 2)
     mesh = [1, 2, 1, 2, 4, 2, 1, 2, 1]
     shape = matrix.shape
@@ -76,7 +76,7 @@ def apply_weighted_median_one_dimension(matrix,size):
     return out
 
 def apply_median_one_dimension(matrix,size):
-    out = np.zeros(matrix.shape, dtype=np.int16)
+    out = np.zeros(matrix.shape, dtype=np.uint8)
     radius = int(size / 2)
     shape = matrix.shape
     for i in range(shape[0]):
@@ -106,4 +106,4 @@ def highpass_filter(matrix,size):
     radius = int(size/2)
     mesh[radius, radius] = (size*size - 1) / (size*size)
     print(mesh)
-    return actions.linear_transform(apply_mesh(matrix, mesh, size))
+    return apply_mesh(matrix, mesh, size)
