@@ -2,6 +2,7 @@ from tkinter import Tk, Entry, Scale, Label, LabelFrame, Button, messagebox, Men
 from PIL import Image, ImageTk
 import actions as actions
 import generation as gen
+import border as border
 import json
 import numpy as np
 
@@ -61,6 +62,16 @@ class MyFirstGUI:
         filter_menu.add_command(label="Weighted Median", command=lambda: actions.weighted_median_filter(self, 3))
         filter_menu.add_command(label="High-Pass", command=lambda: actions.highpass_filter(self, 3))
         menubar.add_cascade(menu=filter_menu, label="Filters")
+
+        border_menu = Menu(menubar, tearoff=0)
+        border_menu.add_command(label="Prewit", command=lambda: self.border(border.prewit))
+        border_menu.add_command(label="Sobel", command=lambda: self.border(border.sobel))
+        border_menu.add_command(label="Multi Prewit", command=lambda: self.border(border.multi_prewit))
+        border_menu.add_command(label="Multi Sobel", command=lambda: self.border(border.multi_sobel))
+        border_menu.add_command(label="Laplace", command=lambda: self.border(border.laplace))
+        border_menu.add_command(label="Intelligent Laplace", command=lambda: self.border(border.intelligent_laplace))
+        border_menu.add_command(label="Laplace - Gauss", command=lambda: self.border(border.laplace_gauss))
+        menubar.add_cascade(menu=border_menu, label="Border")
 
         noise_menu = Menu(menubar, tearoff=0)
         noise_menu.add_command(label="Gaussian", command=lambda: actions.percentage_textbox(self, 'gaussian'))
@@ -264,6 +275,11 @@ class MyFirstGUI:
         self.cancel.grid(row=1, column=1)
         self.w = w
         self.l = l
+
+    def border(self, function):
+        self.canvas.true_image = Image.fromarray(function(np.array(self.canvas.true_image)))
+        self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+        self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
 
 
 root = Tk()
