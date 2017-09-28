@@ -264,6 +264,9 @@ def to_main_canvas(self, can):
     self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
     self.canvas.configure(width=can.true_image.size[0], height=can.true_image.size[1])
 
+def default_save(can, filename):
+    can.true_image.save(filename)
+    print(filename)
 
 def save(window, can):
     filename = filedialog.asksaveasfilename(parent=window)
@@ -437,6 +440,10 @@ def ret_exponential_window(self, width, height, img_arr, percentage, lam, type):
     print("%: " + str(percentage))
     print("lambda: " + str(lam))
 
+    print("[0][0]: " + str(img_arr[0][0]));
+    print("[0][1]: " + str(img_arr[0][1]));
+    print("[1][0]: " + str(img_arr[1][0]));
+
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
@@ -534,10 +541,69 @@ def data_difansi(self, type):
     self.new_window.title(type + " - Enter Gamma:")
     self.l=Label(self.new_window,text="Enter a valid gamma number")
     self.l.pack()
-    self.per = Entry(self.new_window)
-    self.per.pack()
-    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: gamma_function(self, float(self.per.get())))
+    self.entry_gamma = Entry(self.new_window)
+    self.entry_gamma.pack()
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: g_function(self, type, float(self.entry_gamma.get()), 1, 1))
     self.ok.pack()
+
+
+def g_function(self, type, gamma, step, step_max):
+
+    height, width = self.canvas.true_image.size
+    img_arr = np.array(self.canvas.true_image, dtype=np.int16)
+
+    print("w: " + str(width));
+    print("h:" + str(height));
+    print("[0][0]: " + str(img_arr[0][0]))
+
+    for i in range(width):
+        for j in range(height):
+            derivadas = derivada(self, img_arr, i, j, width, height)
+            constantes = constante(img_arr, i, j, gamma, derivadas, type)
+            img_arr[i][j] = img_arr[i][j] + 0.25*( derivadas[0]*constantes[0] +  derivadas[1]*constantes[1] + derivadas[2]*constantes[2] + derivadas[2]*constantes[2])
+
+    matrix_to_window(self, img_arr, "PASO 1", get_img_type(self))
+    step += 1
+
+# 0 NORTE
+# 1 SUR
+# 2 ESTE
+# 3 OESTE
+def derivada(self, img_arr, i, j, w, h):
+    derivadas = []
+    coordenadas = [[0,-1],[0,1],[1,0],[-1,0]]
+    for each in range(4): #siempre van a ser 4 coordenadas.
+        width = i + coordenadas[each][0]
+        height = j + coordenadas[each][1]
+
+        #el if de la muerte
+        if width < w and height < h and width > 0 and height > 0:
+            pixel_calculated = img_arr[width][height]
+            pixel_center = img_arr[i][j]
+            derivadas.append(pixel_calculated - pixel_center)
+        else:
+            derivadas.append(img_arr[i][j])
+
+    return derivadas
+
+def constante(img_arr, i, j, gamma, derivadas, type):
+    constantes = []
+
+    for each in range(4):
+        if type == 'leclerc':
+            constantes.append(g_leclerc(gamma, derivadas[each]*img_arr[i][j]))
+        else:
+            constantes.append(g_lorentziano(gamma, derivadas[each]*img_arr[i][j]))
+
+    return constantes
+
+def g_leclerc(gamma, module):
+    return np.exp( (-1*(module**2))/gamma**2 )
+
+def g_lorentziano(gamma, module):
+    return ((module/sigma)**2 + 1)**(-1)
+
+#ACA TERMINA LO DE DIFERENCIA ANSIOTROPICA
 
 
 #--------------------KEVIN--------------------
