@@ -556,14 +556,16 @@ def g_function(self, type, gamma, step, step_max):
     print("h:" + str(height));
     print("[0][0]: " + str(img_arr[0][0]))
 
-    for i in range(width):
-        for j in range(height):
-            derivadas = derivada(self, img_arr, i, j, width, height)
-            constantes = constante(img_arr, i, j, gamma, derivadas, type)
-            img_arr[i][j] = img_arr[i][j] + 0.25*( derivadas[0]*constantes[0] +  derivadas[1]*constantes[1] + derivadas[2]*constantes[2] + derivadas[2]*constantes[2])
+    for iteration in range(20):
+        print("Iteracion nº: " + str(iteration))
+        for i in range(width):
+            for j in range(height):
+                derivadas = derivada(self, img_arr, i, j, width, height)
+                constantes = constante(img_arr, i, j, gamma, derivadas, type)
+                img_arr[i][j] = img_arr[i][j] + 0.25*( derivadas[0]*constantes[0] +  derivadas[1]*constantes[1] + derivadas[2]*constantes[2] + derivadas[2]*constantes[2])
 
     matrix_to_window(self, img_arr, "PASO 1", get_img_type(self))
-    step += 1
+    # step += 1
 
 # 0 NORTE
 # 1 SUR
@@ -582,16 +584,20 @@ def derivada(self, img_arr, i, j, w, h):
             pixel_center = img_arr[i][j]
             derivadas.append(pixel_calculated - pixel_center)
         else:
-            derivadas.append(img_arr[i][j])
+            # derivadas.append(img_arr[i][j])
+            derivadas.append(0)
 
     return derivadas
 
 def constante(img_arr, i, j, gamma, derivadas, type):
-    constantes = []
+    constantes = np.zeros(4,np.int32)
 
     for each in range(4):
         if type == 'leclerc':
-            constantes.append(g_leclerc(gamma, derivadas[each]*img_arr[i][j]))
+            dxi = derivadas[each]*img_arr[i][j]
+            glerc = g_leclerc(gamma, dxi)
+            # print(glerc)
+            constantes[each] = glerc
         else:
             constantes.append(g_lorentziano(gamma, derivadas[each]*img_arr[i][j]))
 
@@ -601,7 +607,7 @@ def g_leclerc(gamma, module):
     return np.exp( (-1*(module**2))/gamma**2 )
 
 def g_lorentziano(gamma, module):
-    return ((module/sigma)**2 + 1)**(-1)
+    return ((module/gamma)**2 + 1)**(-1)
 
 #ACA TERMINA LO DE DIFERENCIA ANSIOTROPICA
 
