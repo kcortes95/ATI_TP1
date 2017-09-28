@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -85,5 +87,3 @@ def get_histogram(image):
         plt.bar(range(0, 256), image)
         plt.title("Grey")
         plt.show()
-
-

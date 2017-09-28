@@ -73,6 +73,11 @@ class MyFirstGUI:
         border_menu.add_command(label="Laplace - Gauss", command=lambda: self.border(border.laplace_gauss))
         menubar.add_cascade(menu=border_menu, label="Border")
 
+        difansi = Menu(menubar, tearoff=0)
+        difansi.add_command(label="Leclerc", command=lambda: actions.data_difansi(self, 'leclerc'))
+        difansi.add_command(label="Lorentziano", command=lambda: actions.data_difansi(self, 'lorentziano'))
+        menubar.add_cascade(menu=difansi, label="Dif. Ansiotrópica")
+
         noise_menu = Menu(menubar, tearoff=0)
         noise_menu.add_command(label="Gaussian", command=lambda: actions.percentage_textbox(self, 'gaussian'))
         noise_menu.add_command(label="Rayleigh", command=lambda: actions.percentage_textbox(self, 'rayleigh'))
@@ -284,7 +289,7 @@ class MyFirstGUI:
 
 root = Tk()
 my_gui = MyFirstGUI(root)
-icon = PhotoImage(file='ati.gif')
+icon = PhotoImage(file='src/ati.gif')
 root.tk.call('wm', 'iconphoto', root._w, icon)
 my_gui.release = True
 root.mainloop()

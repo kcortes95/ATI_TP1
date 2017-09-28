@@ -378,13 +378,6 @@ def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma, typ
     print("mu: " + str(mu))
     print("sigma: " + str(sigma))
 
-    print("**************************")
-    print(str(np.array(img_arr[0][0])))
-    print(str(img_arr[0][1]))
-    print(str(img_arr[1][0]))
-    print(str(img_arr[1][1]))
-    print("**************************")
-
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
@@ -532,6 +525,20 @@ def din_range(self, matrix):
         matrix_to_window(self, img_arr, "Dinamic Range", type)
 
     return img_arr
+
+#ACA EMPIEZA LO DE DIFERENCIA ANSIOTROPICA
+
+def data_difansi(self, type):
+    self.new_window = Toplevel()
+    self.new_window.minsize(width=200, height=70)
+    self.new_window.title(type + " - Enter Gamma:")
+    self.l=Label(self.new_window,text="Enter a valid gamma number")
+    self.l.pack()
+    self.per = Entry(self.new_window)
+    self.per.pack()
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: gamma_function(self, float(self.per.get())))
+    self.ok.pack()
+
 
 #--------------------KEVIN--------------------
 
