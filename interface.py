@@ -73,10 +73,15 @@ class MyFirstGUI:
         border_menu.add_command(label="Laplace - Gauss", command=lambda: self.border(border.laplace_gauss))
         menubar.add_cascade(menu=border_menu, label="Border")
 
+
+        dif = Menu(menubar, tearoff=0)
         difansi = Menu(menubar, tearoff=0)
         difansi.add_command(label="Leclerc", command=lambda: actions.data_difansi(self, 'leclerc'))
         difansi.add_command(label="Lorentziano", command=lambda: actions.data_difansi(self, 'lorentziano'))
-        menubar.add_cascade(menu=difansi, label="Dif. Ansiotrópica")
+        dif.add_cascade(menu=difansi, label="Anisotropic Dif.")
+        dif.add_command(label="Isotropic Dif.", command=lambda: actions.data_difiso(self))
+        menubar.add_cascade(menu=dif, label="Diffusion")
+
 
         noise_menu = Menu(menubar, tearoff=0)
         noise_menu.add_command(label="Gaussian", command=lambda: actions.percentage_textbox(self, 'gaussian'))

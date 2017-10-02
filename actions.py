@@ -611,6 +611,26 @@ def g_lorentziano(gamma, module):
 
 #ACA TERMINA LO DE DIFERENCIA ANSIOTROPICA
 
+def data_difiso(self):
+    self.new_window = Toplevel()
+    self.new_window.minsize(width=200, height=70)
+    self.new_window.title("T value for Gauss")
+    self.l=Label(self.new_window,text="Enter a valid t number")
+    self.l.pack()
+    self.entry_t = Entry(self.new_window)
+    self.entry_t.pack()
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: isotropic(self, float(self.entry_t.get())))
+    self.ok.pack()
+
+def isotropic(self, tvalue):
+    height, width = self.canvas.true_image.size
+
+    img_original = np.array(self.canvas.true_image, dtype=np.int16)
+    matrix_to_window(self, img_original, "Original", 'L')
+    gauss_filter(self, 3, tvalue)
+    img_gauss = np.array(self.canvas.true_image, dtype=np.int16)
+    matrix_to_window(self, img_gauss, "Img w/ Gauss", 'L')
+    multiply(self, img_original, img_gauss, "Result", 'L')
 
 #--------------------KEVIN--------------------
 
