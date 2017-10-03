@@ -551,20 +551,24 @@ def g_function(self, type, gamma, step, step_max):
 
     height, width = self.canvas.true_image.size
     img_arr = np.array(self.canvas.true_image, dtype=np.int16)
+    img_aux = np.array(self.canvas.true_image, dtype=np.int16)
 
-    print("w: " + str(width));
-    print("h:" + str(height));
-    print("[0][0]: " + str(img_arr[0][0]))
+    # print("w: " + str(width));
+    # print("h:" + str(height));
+    # print("[0][0]: " + str(img_arr[0][0]))
 
-    for iteration in range(20):
+    for iteration in range(5):
         print("Iteracion nº: " + str(iteration))
         for i in range(width):
             for j in range(height):
                 derivadas = derivada(self, img_arr, i, j, width, height)
                 constantes = constante(img_arr, i, j, gamma, derivadas, type)
-                img_arr[i][j] = img_arr[i][j] + 0.25*( derivadas[0]*constantes[0] +  derivadas[1]*constantes[1] + derivadas[2]*constantes[2] + derivadas[2]*constantes[2])
+                img_aux[i][j] = img_arr[i][j] + 0.25*( derivadas[0]*constantes[0] +  derivadas[1]*constantes[1] + derivadas[2]*constantes[2] + derivadas[3]*constantes[3])
 
-    matrix_to_window(self, img_arr, "PASO 1", get_img_type(self))
+        matrix_to_window(self, img_aux, "PASO " + str(iteration), get_img_type(self))
+        img_arr=img_aux
+
+    matrix_to_window(self, img_arr, "Finalmente...", get_img_type(self))
     # step += 1
 
 # 0 NORTE
