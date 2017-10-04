@@ -90,6 +90,10 @@ class MyFirstGUI:
                                command=lambda: actions.percentage_textbox(self, 'salt_and_pepper'))
         menubar.add_cascade(menu=noise_menu, label="Noise")
 
+        datamenu = Menu(menubar, tearoff=0)
+        datamenu.add_command(label="Global Threshold", command=lambda: actions.threshold_textbox(self) )
+        menubar.add_cascade(menu=datamenu, label="Data")
+
         master.config(menu=menubar)
         self.menubar = menubar
         self.label_frame = LabelFrame(master, text="Operation")

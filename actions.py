@@ -614,6 +614,75 @@ def g_lorentziano(gamma, module):
 
 #ACA TERMINA LO DE DIFERENCIA ANSIOTROPICA
 
+def threshold_textbox(self):
+    self.new_window = Toplevel()
+    self.new_window.minsize(width=200, height=70)
+    self.new_window.title("Enter threshold value")
+    self.l=Label(self.new_window,text="Enter threshold number")
+    self.l.pack()
+    self.value = Entry(self.new_window)
+    self.value.pack()
+    self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: global_umbral_and_print(self, np.array(self.canvas.true_image), float(self.value.get())))
+    self.ok.pack()
+
+def global_umbral_and_print(self, matrix, value):
+
+    new_matrix = np.zeros(matrix.shape)
+
+    delta_umbral = 0.5
+    new_umbral_value = 0
+
+    # aca tendria que devolver un mensaje de error, diciendo que no se puede hacer
+    if value == 0 or value == 255:
+        return new_matrix
+
+    # g1 para los valores que son menor al umbral
+    count_g1=0
+    count_g2=0
+    sum_g1=0
+    sum_g2=0
+
+    print("aca")
+    print("value: " + str(value))
+    print("new_umbral_value: " + str(new_umbral_value))
+    while ( abs(value - new_umbral_value) > delta_umbral ):
+        print("Entro")
+
+        if new_umbral_value != 0:
+            value = new_umbral_value
+
+        for i in range(matrix.shape[0]):
+            for j in range(matrix.shape[1]):
+                new_matrix[i, j] = 255 if matrix[i, j] >= value else 0
+
+                if new_matrix[i,j] <= value:
+                    count_g1 += 1
+                    sum_g1 += new_matrix[i, j]
+                else:
+                    count_g2 += 1
+                    sum_g2 += new_matrix[i, j]
+
+        # deshardcodear el tipo de la imagen!!!
+        print("count_g1 " + str(count_g1) )
+        print("count_g2 " + str(count_g2) )
+        print("sum_g1 " + str(sum_g1) )
+        print("sum_g2 " + str(sum_g2) )
+
+        matrix_to_window(self, new_matrix, "Umbralized", 'L')
+
+        m1 = (1/count_g1) * sum_g1
+        m2 = (1/count_g2) * sum_g2
+        new_umbral_value = 0.5 * (m1 + m2)
+        # Restauro valores para la proxima iteracion
+        count_g1 = 0
+        count_g2 = 0
+        sum_g1 = 0
+        sum_g2 = 0
+
+        print("El nuevo valor de T es: " + str(new_umbral_value))
+
+    return new_matrix
+
 
 #--------------------KEVIN--------------------
 
