@@ -2,6 +2,7 @@ import numpy as np
 import math
 from tkinter import Toplevel, Button, Entry, Label
 import actions
+import meshoperations as mesh
 
 direction = np.array([(1, 0), (-1, 0), (0, 1), (0, -1)])
 derivates = np.zeros(4)
@@ -33,6 +34,14 @@ def lorentziano(matrix, iterations, sigma):
     return anisotropic_diffusion(matrix, iterations, sigma, lorentziano_function)
 
 
+def identity(module,sigma):
+    return 1
+
+
+def isotropic(matrix, iterations):
+    return anisotropic_diffusion(matrix, iterations, 1, identity)
+
+
 def leclerc_function(module, sigma):
     return math.exp(-(module*module) / (sigma*sigma))
 
@@ -51,14 +60,4 @@ def data_difiso(self):
     self.entry_t.pack()
     self.ok = Button(self.new_window, text="OK", width=10, height=1, command=lambda: isotropic(self, float(self.entry_t.get())))
     self.ok.pack()
-
-def isotropic(self, tvalue):
-    height, width = self.canvas.true_image.size
-
-    img_original = np.array(self.canvas.true_image, dtype=np.int16)
-    actions.matrix_to_window(self, img_original, "Original", 'L')
-    actions.gauss_filter(self, 3, tvalue)
-    img_gauss = np.array(self.canvas.true_image, dtype=np.int16)
-    actions.matrix_to_window(self, img_gauss, "Img w/ Gauss", 'L')
-    actions.multiply(self, img_original, img_gauss, "Result", 'L')
 

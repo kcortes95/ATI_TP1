@@ -80,7 +80,7 @@ class MyFirstGUI:
         difansi = Menu(menubar, tearoff=0)
         difansi.add_command(label="Leclerc", command=lambda: self.double_text_box(anistropic.leclerc, "Iterations", "Sigma"))
         difansi.add_command(label="Lorentziano", command=lambda: self.double_text_box(anistropic.lorentziano, "Interations", "Sigma"))
-        difansi.add_command(label="Isotropic", command= lambda: anistropic.data_difiso(self))
+        difansi.add_command(label="Isotropic", command= lambda: self.text_box(anistropic.isotropic, "Iterations"))
         menubar.add_cascade(menu=difansi, label="Dif")
 
         noise_menu = Menu(menubar, tearoff=0)

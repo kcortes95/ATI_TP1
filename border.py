@@ -98,5 +98,8 @@ def laplace_gauss(matrix, std):
         for j in range(-radius, radius + 1):
             aux = 2 - (i*i + j*j) / (std*std)
             m[i + radius, j + radius] = cst * aux * math.exp(-(j * j + i * i) / (2 * std * std))
+
+    print(m)
+    print(sum(sum(m)))
     ma = signal.convolve2d(matrix, m, "same", "symm")
     return zero_cross(ma)
