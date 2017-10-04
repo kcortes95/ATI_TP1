@@ -63,15 +63,15 @@ def multi_sobel(matrix):
     return actions.linear_transform(out).astype(np.uint8)
 
 
-def laplace(matrix,threshold):
+def laplace(matrix, threshold=0):
     m = np.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]])
     aux = mesh.apply_mesh_one_dimension(matrix, m, 3)
     out = np.zeros(matrix.shape,dtype=np.uint8)
-    for i in range(1,matrix.shape[0]):
-        for j in range(1,matrix.shape[1]):
-            if np.sign(aux[i-1, j])*np.sign(aux[i, j]) < 0:
+    for i in range(1,matrix.shape[0]-1):
+        for j in range(1,matrix.shape[1]-1):
+            if np.sign(aux[i-1, j])*np.sign(aux[i+1, j]) < 0:
                 out[i, j] = 255 if abs(aux[i-1, j]) + abs(aux[i, j]) >= threshold else 0
-            if np.sign(aux[i, j-1])*np.sign(aux[i, j]) < 0 and out[i, j] != 255:
+            if np.sign(aux[i, j-1])*np.sign(aux[i, j+1]) < 0 and out[i, j] != 255:
                 out[i, j] = 255 if abs(aux[i, j - 1]) + abs(aux[i, j]) >= threshold else 0
 
     return out
@@ -83,8 +83,8 @@ def intelligent_laplace(matrix):
     return laplace(matrix, threshold)
 
 def laplace_gauss(matrix):
-    std = 1
-    size = 5
+    std = 6
+    size = 27
     m = np.zeros((size, size))
     radius = int(size / 2)
     cst = -1 / (math.sqrt(2 * math.pi) * std * std * std)

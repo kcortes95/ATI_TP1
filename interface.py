@@ -5,6 +5,7 @@ import generation as gen
 import border as border
 import json
 import numpy as np
+import anistropic
 
 
 class MyFirstGUI:
@@ -39,7 +40,7 @@ class MyFirstGUI:
 
         datamenu = Menu(menubar, tearoff=0)
         datamenu.add_command(label="Histogram", command=lambda: actions.show_hist(self))
-        datamenu.add_command(label="Threshold", command=lambda: self.umbral(master))
+        datamenu.add_command(label="Threshold", command=lambda: self.slider("Umbral", actions.umbral))
         datamenu.add_command(label="Equalize", command=lambda: actions.equalize(self))
         datamenu.add_command(label="Contrast", command=lambda: self.contrast(master))
         menubar.add_cascade(menu=datamenu, label="Data")
@@ -69,19 +70,17 @@ class MyFirstGUI:
         border_menu.add_command(label="Multi Prewit", command=lambda: self.border(border.multi_prewit))
         border_menu.add_command(label="Multi Sobel", command=lambda: self.border(border.multi_sobel))
         border_menu.add_command(label="Laplace", command=lambda: self.border(border.laplace))
+        border_menu.add_command(label="Param Laplace", command=lambda: self.slider("Laplace", border.laplace))
         border_menu.add_command(label="Intelligent Laplace", command=lambda: self.border(border.intelligent_laplace))
+
         border_menu.add_command(label="Laplace - Gauss", command=lambda: self.border(border.laplace_gauss))
         menubar.add_cascade(menu=border_menu, label="Border")
 
-
-        dif = Menu(menubar, tearoff=0)
         difansi = Menu(menubar, tearoff=0)
         difansi.add_command(label="Leclerc", command=lambda: actions.data_difansi(self, 'leclerc'))
         difansi.add_command(label="Lorentziano", command=lambda: actions.data_difansi(self, 'lorentziano'))
-        dif.add_cascade(menu=difansi, label="Anisotropic Dif.")
-        dif.add_command(label="Isotropic Dif.", command=lambda: actions.data_difiso(self))
-        menubar.add_cascade(menu=dif, label="Diffusion")
-
+        difansi.add_command(label="Isotropic", command= lambda: anistropic.data_difiso(self))
+        menubar.add_cascade(menu=difansi, label="Dif")
 
         noise_menu = Menu(menubar, tearoff=0)
         noise_menu.add_command(label="Gaussian", command=lambda: actions.percentage_textbox(self, 'gaussian'))
@@ -290,6 +289,38 @@ class MyFirstGUI:
         self.canvas.true_image = Image.fromarray(function(np.array(self.canvas.true_image)))
         self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
         self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
+
+    def slider(self, string, function):
+        def apply(event):
+            self.canvas.true_image = Image.fromarray(function(np.array(self.canvas.saved_image), self.w.get()))
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+        def save():
+            self.w.grid_forget()
+            self.cancel.grid_forget()
+            self.accept.grid_forget()
+
+        def cancel():
+            self.canvas.true_image = self.canvas.saved_image
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+            self.w.grid_forget()
+            self.cancel.grid_forget()
+            self.accept.grid_forget()
+
+        self.canvas.saved_image = self.canvas.true_image
+        w = Scale(self.label_frame, from_=0, to=255, orient="h", length=255)
+        w.bind("<ButtonRelease-1>", apply)
+        w.set(128)
+        w.grid(row=0, column=0, columnspan=2)
+        self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
+        self.accept.grid(row=1, column=0)
+        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
+        self.cancel.grid(row=1, column=1)
+        self.w = w
+        self.label_frame.text = string
+
 
 
 root = Tk()
