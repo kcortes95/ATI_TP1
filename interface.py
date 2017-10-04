@@ -5,7 +5,9 @@ import generation as gen
 import border as border
 import json
 import numpy as np
+import meshoperations as mesh
 import anistropic
+import thresholds
 
 
 class MyFirstGUI:
@@ -40,7 +42,6 @@ class MyFirstGUI:
 
         datamenu = Menu(menubar, tearoff=0)
         datamenu.add_command(label="Histogram", command=lambda: actions.show_hist(self))
-        datamenu.add_command(label="Threshold", command=lambda: self.slider("Umbral", actions.umbral))
         datamenu.add_command(label="Equalize", command=lambda: actions.equalize(self))
         datamenu.add_command(label="Contrast", command=lambda: self.contrast(master))
         menubar.add_cascade(menu=datamenu, label="Data")
@@ -56,12 +57,12 @@ class MyFirstGUI:
         menubar.add_cascade(label="Generate", menu=gimagemenu)
 
         filter_menu = Menu(menubar, tearoff=0)
-        filter_menu.add_command(label="Mean", command=lambda: self.filter(actions.mean_filter))
-        filter_menu.add_command(label="Median", command=lambda: self.filter(actions.median_filter))
+        filter_menu.add_command(label="Mean", command=lambda: self.text_box(mesh.mean_filter,"Size"))
+        filter_menu.add_command(label="Median", command=lambda: self.text_box(mesh.median_filter,"Size"))
         filter_menu.add_command(label="Gauss", command=lambda: self.gaussian_filter(master))
-        filter_menu.add_command(label="Weighted Mean", command=lambda: actions.weighted_mean_filter(self, 3))
-        filter_menu.add_command(label="Weighted Median", command=lambda: actions.weighted_median_filter(self, 3))
-        filter_menu.add_command(label="High-Pass", command=lambda: actions.highpass_filter(self, 3))
+        filter_menu.add_command(label="Weighted Mean", command=lambda: self.apply_method(mesh.weighted_mean_filter, 3))
+        filter_menu.add_command(label="Weighted Median", command=lambda: self.apply_method(mesh.weighted_median_filter, 3))
+        filter_menu.add_command(label="High-Pass", command=lambda: self.apply_method(mesh.highpass_filter, 3))
         menubar.add_cascade(menu=filter_menu, label="Filters")
 
         border_menu = Menu(menubar, tearoff=0)
@@ -73,12 +74,12 @@ class MyFirstGUI:
         border_menu.add_command(label="Param Laplace", command=lambda: self.slider("Laplace", border.laplace))
         border_menu.add_command(label="Intelligent Laplace", command=lambda: self.border(border.intelligent_laplace))
 
-        border_menu.add_command(label="Laplace - Gauss", command=lambda: self.border(border.laplace_gauss))
+        border_menu.add_command(label="Laplace - Gauss", command=lambda: self.text_box(border.laplace_gauss, "Sigma"))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
-        difansi.add_command(label="Leclerc", command=lambda: actions.data_difansi(self, 'leclerc'))
-        difansi.add_command(label="Lorentziano", command=lambda: actions.data_difansi(self, 'lorentziano'))
+        difansi.add_command(label="Leclerc", command=lambda: self.double_text_box(anistropic.leclerc, "Iterations", "Sigma"))
+        difansi.add_command(label="Lorentziano", command=lambda: self.double_text_box(anistropic.lorentziano, "Interations", "Sigma"))
         difansi.add_command(label="Isotropic", command= lambda: anistropic.data_difiso(self))
         menubar.add_cascade(menu=difansi, label="Dif")
 
@@ -90,9 +91,11 @@ class MyFirstGUI:
                                command=lambda: actions.percentage_textbox(self, 'salt_and_pepper'))
         menubar.add_cascade(menu=noise_menu, label="Noise")
 
-        datamenu = Menu(menubar, tearoff=0)
-        datamenu.add_command(label="Global Threshold", command=lambda: actions.threshold_textbox(self) )
-        menubar.add_cascade(menu=datamenu, label="Data")
+        threshold_menu = Menu(menubar, tearoff=0)
+        threshold_menu.add_command(label="Global Threshold", command=lambda: self.apply_method(thresholds.global_threshold,self))
+        threshold_menu.add_command(label="Threshold", command=lambda: self.slider("Umbral", thresholds.threshold))
+        threshold_menu.add_command(label="Otsu", command=lambda: self.apply_method(thresholds.otsu))
+        menubar.add_cascade(menu=threshold_menu, label="Threshold")
 
         master.config(menu=menubar)
         self.menubar = menubar
@@ -237,7 +240,10 @@ class MyFirstGUI:
             self.l2.grid_forget()
             self.cancel.grid_forget()
             self.accept.grid_forget()
-            actions.gauss_filter(self, int(self.w.get()), int(self.w2.get()))
+            matrix = mesh.gauss_filter(np.array(self.canvas.true_image), int(self.w.get()), int(self.w2.get()))
+            self.canvas.true_image = Image.fromarray(matrix)
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
         def cancel():
             self.w.grid_forget()
@@ -264,39 +270,103 @@ class MyFirstGUI:
         self.l = l
         self.l2 = l2
 
-    def filter(self, function):
+    def text_box(self, callback, text):
         def save():
             self.w.grid_forget()
             self.l.grid_forget()
             self.cancel.grid_forget()
             self.accept.grid_forget()
-            function(self, int(self.w.get()))
+            self.apply.grid_forget()
+            if self.w.get() != "":
+                self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), int(self.w.get())))
+                self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+                self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+        def apply():
+            self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), int(self.w.get())))
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
         def cancel():
             self.w.grid_forget()
             self.l.grid_forget()
+            self.apply.grid_forget()
             self.cancel.grid_forget()
             self.accept.grid_forget()
+            self.canvas.true_image = self.canvas.saved_image
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
-        l = Label(self.label_frame, text="Size")
+
+        self.canvas.saved_image = self.canvas.true_image
+        l = Label(self.label_frame, text=text)
         l.grid(row=0, column=0)
         w = Entry(self.label_frame)
         w.grid(row=0, column=1)
-        self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
-        self.accept.grid(row=1, column=0)
+        self.apply = Button(self.label_frame, text="Apply", width=10, height=1, command=apply)
+        self.apply.grid(row=1, column=1)
+        self.accept = Button(self.label_frame, text="Ok", width=10, height=1, command=save)
+        self.accept.grid(row=1, column=2)
         self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
-        self.cancel.grid(row=1, column=1)
+        self.cancel.grid(row=1, column=0)
         self.w = w
         self.l = l
+
+    def double_text_box(self, callback, text1, text2):
+        def save():
+            self.w.grid_forget()
+            self.l.grid_forget()
+            self.w2.grid_forget()
+            self.l2.grid_forget()
+            self.cancel.grid_forget()
+            self.accept.grid_forget()
+            self.apply.grid_forget()
+            if self.w.get() != "" and self.w2.get() != "":
+                self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), int(self.w.get()), int(self.w2.get())))
+                self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+                self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+        def apply():
+            self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), int(self.w.get()), int(self.w2.get())))
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+        def cancel():
+            self.l.grid_forget()
+            self.w.grid_forget()
+            self.l2.grid_forget()
+            self.w2.grid_forget()
+            self.apply.grid_forget()
+            self.cancel.grid_forget()
+            self.accept.grid_forget()
+            self.canvas.true_image = self.canvas.saved_image
+            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+        self.canvas.saved_image = self.canvas.true_image
+        self.l = Label(self.label_frame, text=text1)
+        self.l.grid(row=0, column=0)
+        self.w = Entry(self.label_frame)
+        self.w.grid(row=0, column=1)
+        self.l2 = Label(self.label_frame, text=text2)
+        self.l2.grid(row=0, column=2)
+        self.w2 = Entry(self.label_frame)
+        self.w2.grid(row=0, column=3)
+        self.apply = Button(self.label_frame, text="Apply", width=10, height=1, command=apply)
+        self.apply.grid(row=1, column=1)
+        self.accept = Button(self.label_frame, text="Ok", width=10, height=1, command=save)
+        self.accept.grid(row=1, column=2)
+        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
+        self.cancel.grid(row=1, column=0)
 
     def border(self, function):
         self.canvas.true_image = Image.fromarray(function(np.array(self.canvas.true_image)))
         self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
         self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
 
-    def slider(self, string, function):
+    def slider(self, string, callback):
         def apply(event):
-            self.canvas.true_image = Image.fromarray(function(np.array(self.canvas.saved_image), self.w.get()))
+            self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), self.w.get()))
             self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
             self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
@@ -325,6 +395,14 @@ class MyFirstGUI:
         self.w = w
         self.label_frame.text = string
 
+    def apply_method(self, method, param=-1):
+        if param == -1:
+            self.canvas.true_image = Image.fromarray(method(np.array(self.canvas.true_image)))
+        else:
+            self.canvas.true_image = Image.fromarray(method(np.array(self.canvas.true_image), param))
+
+        self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+        self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
 
 root = Tk()

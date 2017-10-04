@@ -1,29 +1,44 @@
 import numpy as np
+import math
 from tkinter import Toplevel, Button, Entry, Label
 import actions
 
-def anisotropic_diffusion(matrix, iterations, sigma):
+direction = np.array([(1, 0), (-1, 0), (0, 1), (0, -1)])
+derivates = np.zeros(4)
+
+
+def anisotropic_diffusion(matrix, iterations, sigma,function):
     for i in range(iterations):
         for y in range(1, matrix.shape[0]-1):
             for x in range(1, matrix.shape[1]-1):
-                matrix[y, x] = matrix[y, x] + addition(matrix, x, y, sigma)
+                matrix[y, x] = matrix[y, x] + addition(matrix, x, y, sigma,function)
 
     return matrix
 
 
-def addition(matrix, x, y, sigma):
-    direction = np.array([(1, 0), (-1, 0), (0, 1), (0, -1)])
-    derivates = np.zeros(4)
+def addition(matrix, x, y, sigma,function):
     res = 0
     for i in range(4):
         derivates[i] = matrix[y + direction[i, 0], x + direction[i, 1]] - matrix[y, x]
-        res += 0.25*derivates[i]*leclerc(derivates[i], sigma)
+        res += 0.25*derivates[i]*function(derivates[i], sigma)
 
     return res
 
 
-def leclerc(der, sigma):
-    return np.exp(-(der**2)/(sigma**2))
+def leclerc(matrix,iterations, sigma):
+    return anisotropic_diffusion(matrix,iterations,sigma,leclerc_function)
+
+
+def lorentziano(matrix, iterations, sigma):
+    return anisotropic_diffusion(matrix, iterations, sigma, lorentziano_function)
+
+
+def leclerc_function(module, sigma):
+    return math.exp(-(module*module) / (sigma*sigma))
+
+
+def lorentziano_function(module, sigma):
+    return 1 / (pow((module/sigma), 2) + 1)
 
 
 def data_difiso(self):
