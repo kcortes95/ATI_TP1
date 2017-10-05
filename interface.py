@@ -160,7 +160,8 @@ class MyFirstGUI:
 
     def save(self):
         filename = filedialog.asksaveasfilename(parent=root)
-        self.canvas.true_image.save(filename)
+        image = Image.fromarray(actions.linear_transform(np.array(self.canvas.true_image)))
+        image.save(filename)
         print(filename)
 
     def umbral(self, master):

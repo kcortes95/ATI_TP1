@@ -680,4 +680,4 @@ def getf1(value, r1, s1):
     return s1/r1*value
 
 def linear_transform(matrix):
-    return np.interp(matrix,[np.min(matrix),np.max(matrix)],[0,255])
+    return np.interp(matrix, [np.min(matrix),np.max(matrix)], [0,255]).astype(np.uint8)
