@@ -5,6 +5,7 @@ ga = -1
 isGa = 0
 
 def gauss_random(desv, medio):
+    return rd.normalvariate
     global ga
     global isGa
     if  isGa == 0:

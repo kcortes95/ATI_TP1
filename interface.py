@@ -1,4 +1,4 @@
-from tkinter import Tk, Entry, Scale, Label, LabelFrame, Button, messagebox, Menu, filedialog, Canvas, PhotoImage
+from tkinter import Tk, Entry, Scale, Label, LabelFrame, Button, Menu, filedialog, Canvas
 from PIL import Image, ImageTk
 import actions as actions
 import generation as gen
@@ -17,7 +17,8 @@ class MyFirstGUI:
         master.title("Adove Fotoyop")
 
         self.canvas = Canvas(master, width=200, height=200, cursor="crosshair")
-
+        self.saved_image = None
+        self.true_image = None
         menubar = Menu(master)
 
         filemenu = Menu(menubar, tearoff=0)
@@ -43,7 +44,8 @@ class MyFirstGUI:
         datamenu = Menu(menubar, tearoff=0)
         datamenu.add_command(label="Histogram", command=lambda: actions.show_hist(self))
         datamenu.add_command(label="Equalize", command=lambda: actions.equalize(self))
-        datamenu.add_command(label="Contrast", command=lambda: self.contrast(master))
+        datamenu.add_command(label="Contrast",
+                             command=lambda: self.double_slider("S1", "S2", actions.contrast, "Contrast"))
         menubar.add_cascade(menu=datamenu, label="Data")
 
         gimagemenu = Menu(menubar, tearoff=0)
@@ -57,11 +59,14 @@ class MyFirstGUI:
         menubar.add_cascade(label="Generate", menu=gimagemenu)
 
         filter_menu = Menu(menubar, tearoff=0)
-        filter_menu.add_command(label="Mean", command=lambda: self.text_box(mesh.mean_filter,"Size"))
-        filter_menu.add_command(label="Median", command=lambda: self.text_box(mesh.median_filter,"Size"))
-        filter_menu.add_command(label="Gauss", command=lambda: self.gaussian_filter(master))
+        filter_menu.add_command(label="Mean", command=lambda: self.text_box(mesh.mean_filter, "Size", "Mean Filter"))
+        filter_menu.add_command(label="Median",
+                                command=lambda: self.text_box(mesh.median_filter, "Size", "Median Filter"))
+        filter_menu.add_command(label="Gauss", command=lambda: self.double_text_box(mesh.gauss_filter, "Size", "Sigma",
+                                                                                    "Gauss Filter"))
         filter_menu.add_command(label="Weighted Mean", command=lambda: self.apply_method(mesh.weighted_mean_filter, 3))
-        filter_menu.add_command(label="Weighted Median", command=lambda: self.apply_method(mesh.weighted_median_filter, 3))
+        filter_menu.add_command(label="Weighted Median",
+                                command=lambda: self.apply_method(mesh.weighted_median_filter, 3))
         filter_menu.add_command(label="High-Pass", command=lambda: self.apply_method(mesh.highpass_filter, 3))
         menubar.add_cascade(menu=filter_menu, label="Filters")
 
@@ -74,13 +79,18 @@ class MyFirstGUI:
         border_menu.add_command(label="Param Laplace", command=lambda: self.slider("Laplace", border.laplace))
         border_menu.add_command(label="Intelligent Laplace", command=lambda: self.border(border.intelligent_laplace))
 
-        border_menu.add_command(label="Laplace - Gauss", command=lambda: self.text_box(border.laplace_gauss, "Sigma"))
+        border_menu.add_command(label="Laplace - Gauss",
+                                command=lambda: self.text_box(border.laplace_gauss, "Sigma", 'Laplace - Gauss'))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
-        difansi.add_command(label="Leclerc", command=lambda: self.double_text_box(anistropic.leclerc, "Iterations", "Sigma"))
-        difansi.add_command(label="Lorentziano", command=lambda: self.double_text_box(anistropic.lorentziano, "Interations", "Sigma"))
-        difansi.add_command(label="Isotropic", command= lambda: self.text_box(anistropic.isotropic, "Iterations"))
+        difansi.add_command(label="Leclerc",
+                            command=lambda: self.double_text_box(anistropic.leclerc, "Iterations", "Sigma", "Leclerc"))
+        difansi.add_command(label="Lorentziano",
+                            command=lambda: self.double_text_box(anistropic.lorentziano, "Interations", "Sigma",
+                                                                 "Lorentz"))
+        difansi.add_command(label="Isotropic",
+                            command=lambda: self.text_box(anistropic.isotropic, "Iterations", "Isotropic"))
         menubar.add_cascade(menu=difansi, label="Dif")
 
         noise_menu = Menu(menubar, tearoff=0)
@@ -92,26 +102,35 @@ class MyFirstGUI:
         menubar.add_cascade(menu=noise_menu, label="Noise")
 
         threshold_menu = Menu(menubar, tearoff=0)
-        threshold_menu.add_command(label="Global Threshold", command=lambda: self.apply_method(thresholds.global_threshold,self))
-        threshold_menu.add_command(label="Threshold", command=lambda: self.slider("Umbral", thresholds.threshold))
+        threshold_menu.add_command(label="Global Threshold",
+                                   command=lambda: self.apply_method(thresholds.global_threshold))
+        threshold_menu.add_command(label="Threshold",
+                                   command=lambda: self.slider("Umbral", thresholds.threshold, "Threshold"))
         threshold_menu.add_command(label="Otsu", command=lambda: self.apply_method(thresholds.otsu))
         menubar.add_cascade(menu=threshold_menu, label="Threshold")
 
         master.config(menu=menubar)
         self.menubar = menubar
-        self.label_frame = LabelFrame(master, text="Operation")
+
+        self.label_frame = LabelFrame(self.master, text="Operation")
+        self.labels = [Label(self.label_frame), Label(self.label_frame), Label(self.label_frame),
+                       Label(self.label_frame)]
+        self.entries = [Entry(self.label_frame), Entry(self.label_frame), Entry(self.label_frame),
+                        Entry(self.label_frame)]
+        self.scales = [Scale(self.label_frame, from_=0, to=255, orient="h", length=255),
+                       Scale(self.label_frame, from_=0, to=255, orient="h", length=255),
+                       Scale(self.label_frame, from_=0, to=255, orient="h", length=255),
+                       Scale(self.label_frame, from_=0, to=255, orient="h", length=255)]
+        self.accept = Button(self.label_frame, text="OK", width=10, height=1)
+        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1)
+        self.apply = Button(self.label_frame, text="Apply", width=10, height=1)
+
         self.label_frame.grid(column=0, row=1)
         root.grid_columnconfigure(0, weight=1)
         root.grid_rowconfigure(1, weight=1)
         root.grid_rowconfigure(0, weight=1)
 
     def open(self):
-
-        def set_pixel(event):
-            self.x_text.delete(0, len(self.x_text.get()))
-            self.y_text.delete(0, len(self.y_text.get()))
-            self.x_text.insert(0, event.x)
-            self.y_text.insert(0, event.y)
 
         def set_area(event):
             if self.release:
@@ -130,7 +149,7 @@ class MyFirstGUI:
             self.canvas.coords(self.canvas.rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
             self.canvas.tag_raise(self.canvas.rect)
 
-        def release_left(event):
+        def release_left():
             self.release = True
 
         filename = filedialog.askopenfilename(parent=root)
@@ -148,11 +167,10 @@ class MyFirstGUI:
             photo = ImageTk.PhotoImage(image)
 
         self.canvas.image = photo
-        self.canvas.true_image = image
+        self.true_image = image
         width, height = image.size
         self.canvas.configure(width=width, height=height)
         self.canvas.create_image((0, 0), anchor="nw", image=photo)
-        self.canvas.bind("<Button-3>", set_pixel)
         self.canvas.bind("<B1-Motion>", set_area)
         self.canvas.bind("<ButtonRelease-1>", release_left)
         self.canvas.grid(column=0, row=0)
@@ -160,255 +178,143 @@ class MyFirstGUI:
 
     def save(self):
         filename = filedialog.asksaveasfilename(parent=root)
-        image = Image.fromarray(actions.linear_transform(np.array(self.canvas.true_image)))
+        image = Image.fromarray(actions.linear_transform(np.array(self.true_image)))
         image.save(filename)
         print(filename)
 
-    def umbral(self, master):
-        def set_umbral(event):
-            self.canvas.true_image = Image.fromarray(actions.umbral(np.array(self.canvas.saved_image), self.w.get()))
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
+    def text_box(self, callback, text, name="Operation"):
         def save():
-            self.w.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-
-        def cancel():
-            self.canvas.true_image = self.canvas.saved_image
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-            self.w.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-
-        self.canvas.saved_image = self.canvas.true_image
-        w = Scale(self.label_frame, from_=0, to=255, orient="h", length=255)
-        w.bind("<ButtonRelease-1>", set_umbral)
-        w.set(128)
-        w.grid(row=0, column=0, columnspan=2)
-        self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
-        self.accept.grid(row=1, column=0)
-        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
-        self.cancel.grid(row=1, column=1)
-        self.w = w
-
-    def contrast(self, master):
-        def set_contrast(event):
-            mat = actions.contrast(self, self.canvas.saved_image, self.w1.get(), self.w2.get())
-            self.canvas.true_image = Image.fromarray(mat)
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
-        def save():
-            self.w1.grid_forget()
-            self.w2.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-
-        def cancel():
-            self.canvas.true_image = self.canvas.saved_image
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-            self.w1.grid_forget()
-            self.w2.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-
-        self.canvas.saved_image = self.canvas.true_image
-        w1 = Scale(self.label_frame, from_=0, to=255, orient="h", label="S1", length=255)
-        w1.bind("<ButtonRelease-1>", set_contrast)
-        w1.set(128)
-        w1.grid(row=0, column=0)
-        w2 = Scale(self.label_frame, from_=0, to=255, orient="h", label="S2", length=255)
-        w2.bind("<ButtonRelease-1>", set_contrast)
-        w2.set(128)
-        w2.grid(row=0, column=1)
-        self.w1 = w1
-        self.w2 = w2
-        self.accept = Button(self.label_frame, text="Ok", width=10, height=1, command=save)
-        self.accept.grid(row=1, column=0)
-        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
-        self.cancel.grid(row=1, column=1)
-        self.label_frame.text = "Contrast"
-
-    def gaussian_filter(self, master):
-        def save():
-            self.w.grid_forget()
-            self.w2.grid_forget()
-            self.l.grid_forget()
-            self.l2.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-            matrix = mesh.gauss_filter(np.array(self.canvas.true_image), int(self.w.get()), int(self.w2.get()))
-            self.canvas.true_image = Image.fromarray(matrix)
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
-        def cancel():
-            self.w.grid_forget()
-            self.w2.grid_forget()
-            self.l.grid_forget()
-            self.l2.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-
-        l = Label(self.label_frame, text="Size")
-        l.grid(row=0, column=0)
-        w = Entry(self.label_frame)
-        w.grid(row=0, column=1)
-        l2 = Label(self.label_frame, text="Desv")
-        l2.grid(row=0, column=2)
-        w2 = Entry(self.label_frame)
-        w2.grid(row=0, column=3)
-        self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
-        self.accept.grid(row=1, column=0, columnspan=2)
-        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
-        self.cancel.grid(row=1, column=2, columnspan=2)
-        self.w = w
-        self.w2 = w2
-        self.l = l
-        self.l2 = l2
-
-    def text_box(self, callback, text):
-        def save():
-            self.w.grid_forget()
-            self.l.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-            self.apply.grid_forget()
-            if self.w.get() != "":
-                self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), int(self.w.get())))
-                self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.forget()
+            if self.entries[0].get() != "":
+                self.true_image = Image.fromarray(callback(np.array(self.saved_image), int(self.entries[0].get())))
+                self.canvas.image = ImageTk.PhotoImage(self.true_image)
                 self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
         def apply():
-            self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), int(self.w.get())))
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.true_image = Image.fromarray(callback(np.array(self.saved_image), int(self.entries[0].get())))
+            self.canvas.image = ImageTk.PhotoImage(self.true_image)
             self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
-        def cancel():
-            self.w.grid_forget()
-            self.l.grid_forget()
-            self.apply.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-            self.canvas.true_image = self.canvas.saved_image
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-
-
-        self.canvas.saved_image = self.canvas.true_image
-        l = Label(self.label_frame, text=text)
-        l.grid(row=0, column=0)
-        w = Entry(self.label_frame)
-        w.grid(row=0, column=1)
-        self.apply = Button(self.label_frame, text="Apply", width=10, height=1, command=apply)
+        self.cancel_gui()
+        self.saved_image = self.true_image
+        self.set_label(text, 0)
         self.apply.grid(row=1, column=1)
-        self.accept = Button(self.label_frame, text="Ok", width=10, height=1, command=save)
         self.accept.grid(row=1, column=2)
-        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
         self.cancel.grid(row=1, column=0)
-        self.w = w
-        self.l = l
+        self.apply.config(command=apply)
+        self.accept.config(command=save)
+        self.cancel.config(command=self.cancel_gui)
+        self.label_frame.config(text=name)
 
-    def double_text_box(self, callback, text1, text2):
+    def double_text_box(self, callback, text1, text2, name="Operation"):
         def save():
-            self.w.grid_forget()
-            self.l.grid_forget()
-            self.w2.grid_forget()
-            self.l2.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-            self.apply.grid_forget()
-            if self.w.get() != "" and self.w2.get() != "":
-                self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), int(self.w.get()), int(self.w2.get())))
-                self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.forget()
+            if self.entries[0].get() != "" and self.entries[1].get() != "":
+                self.true_image = Image.fromarray(
+                    callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get())))
+                self.canvas.image = ImageTk.PhotoImage(self.true_image)
                 self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
         def apply():
-            self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), int(self.w.get()), int(self.w2.get())))
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.true_image = Image.fromarray(
+                callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get())))
+            self.canvas.image = ImageTk.PhotoImage(self.true_image)
             self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
-        def cancel():
-            self.l.grid_forget()
-            self.w.grid_forget()
-            self.l2.grid_forget()
-            self.w2.grid_forget()
-            self.apply.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
-            self.canvas.true_image = self.canvas.saved_image
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+        self.cancel_gui()
+        self.saved_image = self.true_image
+        self.set_label(text1, 0)
+        self.set_label(text2, 1)
+        self.apply.grid(row=2, column=1)
+        self.accept.grid(row=2, column=2)
+        self.cancel.grid(row=2, column=0)
+        self.apply.config(command=apply)
+        self.accept.config(command=save)
+        self.cancel.config(command=self.cancel_gui)
+        self.label_frame.config(text=name)
 
-        self.canvas.saved_image = self.canvas.true_image
-        self.l = Label(self.label_frame, text=text1)
-        self.l.grid(row=0, column=0)
-        self.w = Entry(self.label_frame)
-        self.w.grid(row=0, column=1)
-        self.l2 = Label(self.label_frame, text=text2)
-        self.l2.grid(row=0, column=2)
-        self.w2 = Entry(self.label_frame)
-        self.w2.grid(row=0, column=3)
-        self.apply = Button(self.label_frame, text="Apply", width=10, height=1, command=apply)
-        self.apply.grid(row=1, column=1)
-        self.accept = Button(self.label_frame, text="Ok", width=10, height=1, command=save)
-        self.accept.grid(row=1, column=2)
-        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
-        self.cancel.grid(row=1, column=0)
+    def set_label(self, text, position):
+        self.labels[position].config(text=text)
+        self.labels[position].grid(row=position, column=0)
+        self.entries[position].grid(row=position, column=1)
 
-    def border(self, function):
-        self.canvas.true_image = Image.fromarray(function(np.array(self.canvas.true_image)))
-        self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+    def border(self, callback):
+        self.true_image = Image.fromarray(callback(np.array(self.true_image)))
+        self.canvas.image = ImageTk.PhotoImage(self.true_image)
         self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
 
-    def slider(self, string, callback):
+    def slider(self, text, callback, name="Operation"):
         def apply(event):
-            self.canvas.true_image = Image.fromarray(callback(np.array(self.canvas.saved_image), self.w.get()))
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+            self.true_image = Image.fromarray(callback(np.array(self.saved_image), self.scales[0].get()))
+            self.canvas.image = ImageTk.PhotoImage(self.true_image)
             self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
-        def save():
-            self.w.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
+        self.cancel_gui()
+        self.saved_image = self.true_image
+        self.set_slider(0, text, apply)
+        self.accept.grid(row=2, column=0)
+        self.cancel.grid(row=2, column=1)
+        self.accept.config(command=self.forget)
+        self.cancel.config(command=self.cancel_gui)
+        self.label_frame.config(text=name)
 
-        def cancel():
-            self.canvas.true_image = self.canvas.saved_image
-            self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+    def double_slider(self, text1, text2, callback, name="Operation"):
+        def apply(event):
+            self.true_image = Image.fromarray(
+                callback(np.array(self.saved_image), self.scales[0].get(), self.scales[1].get()))
+            self.canvas.image = ImageTk.PhotoImage(self.true_image)
             self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
-            self.w.grid_forget()
-            self.cancel.grid_forget()
-            self.accept.grid_forget()
 
-        self.canvas.saved_image = self.canvas.true_image
-        w = Scale(self.label_frame, from_=0, to=255, orient="h", length=255)
-        w.bind("<ButtonRelease-1>", apply)
-        w.set(128)
-        w.grid(row=0, column=0, columnspan=2)
-        self.accept = Button(self.label_frame, text="OK", width=10, height=1, command=save)
-        self.accept.grid(row=1, column=0)
-        self.cancel = Button(self.label_frame, text="Cancel", width=10, height=1, command=cancel)
-        self.cancel.grid(row=1, column=1)
-        self.w = w
-        self.label_frame.text = string
+        self.cancel_gui()
+        self.saved_image = self.true_image
+        self.set_slider(0, text1, apply)
+        self.set_slider(1, text2, apply)
+        self.accept.grid(row=2, column=0)
+        self.cancel.grid(row=2, column=1)
+        self.accept.config(command=self.forget)
+        self.cancel.config(command=self.cancel_gui)
+        self.label_frame.config(text=name)
+
+    def set_slider(self, position, text, func):
+        self.labels[position].config(text=text)
+        self.labels[position].grid(row=0, column=position * 2, columnspan=2)
+        self.scales[position].bind("<ButtonRelease-1>", func)
+        self.scales[position].set(128)
+        self.scales[position].grid(row=1, column=position * 2, columnspan=2)
 
     def apply_method(self, method, param=-1):
         if param == -1:
-            self.canvas.true_image = Image.fromarray(method(np.array(self.canvas.true_image)))
+            self.true_image = Image.fromarray(method(np.array(self.true_image)))
         else:
-            self.canvas.true_image = Image.fromarray(method(np.array(self.canvas.true_image), param))
+            self.true_image = Image.fromarray(method(np.array(self.true_image), param))
 
-        self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+        self.canvas.image = ImageTk.PhotoImage(self.true_image)
         self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+
+    def cancel_gui(self):
+        if self.saved_image is not None:
+            self.true_image = self.saved_image
+            self.canvas.image = ImageTk.PhotoImage(self.true_image)
+            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+        self.forget()
+
+    def forget(self):
+        for e in self.labels:
+            e.grid_forget()
+        for e in self.entries:
+            e.grid_forget()
+        for e in self.scales:
+            e.grid_forget()
+
+        self.cancel.grid_forget()
+        self.accept.grid_forget()
+        self.apply.grid_forget()
+        print("Forgotten")
 
 
 root = Tk()
 my_gui = MyFirstGUI(root)
-icon = PhotoImage(file='src/ati.gif')
-root.tk.call('wm', 'iconphoto', root._w, icon)
+
+root.iconbitmap('src/ati.ico')
 my_gui.release = True
 root.mainloop()

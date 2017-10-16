@@ -18,8 +18,8 @@ def set_color(self):
     set_pixel(self,color, int(self.x_text.get()), int(self.y_text.get()))
 
 def set_pixel(self, color, x, y):
-    self.canvas.true_image.putpixel((int(x), int(y)), color)
-    self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+    self.true_image.putpixel((int(x), int(y)), color)
+    self.canvas.image = ImageTk.PhotoImage(self.true_image)
     self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
 
 def crop(self, master):
@@ -28,7 +28,7 @@ def crop(self, master):
 
     button = Button(self.new_window, text="Guardar", command=lambda: save_cropped(self, master))
     button.pack()
-    img = self.canvas.true_image.load()
+    img = self.true_image.load()
 
     xstart = self.x_start if self.x_start < self.x_finish else self.x_finish
     ystart = self.y_start if self.y_start < self.y_finish else self.y_finish
@@ -37,7 +37,7 @@ def crop(self, master):
     if isinstance(img[0, 0], tuple):
         new_image = np.zeros((yfinish - ystart, xfinish - xstart, len(img[0, 0])), dtype=np.uint8)
     else:
-        if self.canvas.true_image.mode == 'F' :
+        if self.true_image.mode == 'F' :
             new_image = np.zeros((yfinish - ystart, xfinish - xstart), dtype=np.float32)
         else:
             new_image = np.zeros((yfinish - ystart, xfinish - xstart), dtype=np.uint8)
@@ -51,7 +51,7 @@ def crop(self, master):
             x += 1
         y += 1
         x = 0
-    true_cropped = Image.fromarray(new_image, self.canvas.true_image.mode)
+    true_cropped = Image.fromarray(new_image, self.true_image.mode)
     cropped = ImageTk.PhotoImage(true_cropped)
     self.new_window.canvas = Canvas(self.new_window, width=200, height=200)
     self.new_window.canvas.true_cropped = true_cropped
@@ -72,7 +72,7 @@ def get_area_info(self, master):
     ystart = self.y_start if self.y_start < self.y_finish else self.y_finish
     xfinish = self.x_start if self.x_start > self.x_finish else self.x_finish
     yfinish = self.y_start if self.y_start > self.y_finish else self.y_finish
-    img = self.canvas.true_image.load()
+    img = self.true_image.load()
 
     if isinstance(img[0, 0], tuple):
         if len(img[0,0]) == 4:
@@ -104,14 +104,14 @@ def load_image_on_canvas(self, matrix):
     img = Image.fromarray(matrix)
     photo = ImageTk.PhotoImage(img)
     self.canvas.image = photo
-    self.canvas.true_image = img
+    self.true_image = img
     self.canvas.configure(width=width, height=height)
     self.canvas.create_image((0, 0), image=photo, anchor='nw')
     self.canvas.grid(row=0,column=0)
 
 def rgb_to_hsv(self):
-    pixels = self.canvas.true_image.load()
-    width, height = self.canvas.true_image.size
+    pixels = self.true_image.load()
+    width, height = self.true_image.size
     data = np.zeros((width, height, len(pixels[0, 0])), dtype=np.uint8)
     for x in range(0, width):
         for y in range(0, height):
@@ -122,7 +122,7 @@ def rgb_to_hsv(self):
 #--------------------KEVIN--------------------
 
 def to_negative(self):
-    true_img = self.canvas.true_image
+    true_img = self.true_image
     pixels = true_img.load()
     ar = np.array(true_img, dtype=np.uint8)
     width, height = true_img.size
@@ -260,8 +260,8 @@ def pscreen(self):
     print("Hola mundo")
 
 def to_main_canvas(self, can):
-    self.canvas.true_image = can.true_image
-    self.canvas.image = ImageTk.PhotoImage(self.canvas.true_image)
+    self.true_image = can.true_image
+    self.canvas.image = ImageTk.PhotoImage(self.true_image)
     self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
     self.canvas.configure(width=can.true_image.size[0], height=can.true_image.size[1])
 
@@ -310,14 +310,14 @@ def scalar_mult_textbox(self):
     self.ok.pack()
 
 def scalar_mult(self, scale):
-    img2 = self.canvas.true_image.load()
-    width, height = self.canvas.true_image.size
-    ar = np.array(self.canvas.true_image, dtype=np.int32)
+    img2 = self.true_image.load()
+    width, height = self.true_image.size
+    ar = np.array(self.true_image, dtype=np.int32)
     ar = float(scale) * ar
     ar = din_range(self, ar)
     img_ar = Image.fromarray(ar)
     img = ImageTk.PhotoImage(img_ar)
-    self.canvas.true_image = img_ar
+    self.true_image = img_ar
     self.canvas.image = img
     self.canvas.create_image((0, 0), anchor="nw", image=img)
 
@@ -335,8 +335,8 @@ def percentage_textbox(self, action):
 
 def generic_window(self, percentage, action):
 
-    height, width = self.canvas.true_image.size
-    img_arr = np.array(self.canvas.true_image, dtype=np.int16)
+    height, width = self.true_image.size
+    img_arr = np.array(self.true_image, dtype=np.int16)
 
     type = get_img_type(self)
 
@@ -492,7 +492,7 @@ def gamma_function(self, gam):
     print(type)
     print("lambda " + str(gam))
     c = 255**(1-gam)
-    img_arr = c * (np.array(self.canvas.true_image, dtype=np.uint8)**gam)
+    img_arr = c * (np.array(self.true_image, dtype=np.uint8)**gam)
     # load_image_on_canvas(self, img_arr) #FUCK, con esto me rompe
     matrix_to_window(self, linear_transform(img_arr), "Gamma Function", type)
 
@@ -500,7 +500,7 @@ def gamma_function(self, gam):
 def din_range(self, matrix):
     prtn = False
     if matrix is None:
-        matrix = np.array(self.canvas.true_image, dtype=np.uint8)
+        matrix = np.array(self.true_image, dtype=np.uint8)
         prtn = True
 
     max = np.amax(matrix) #ESTO HAY QUE CALCULARLE EL MAXIMO DE LA IMAGEN
@@ -550,8 +550,8 @@ def data_difansi(self, type):
 
 def g_function(self, type, gamma, step, step_max):
 
-    height, width = self.canvas.true_image.size
-    img_arr = np.array(self.canvas.true_image, dtype=np.int16)
+    height, width = self.true_image.size
+    img_arr = np.array(self.true_image, dtype=np.int16)
 
     print("w: " + str(width));
     print("h:" + str(height));
@@ -611,21 +611,21 @@ def constante(img_arr, i, j, gamma, derivadas, type):
 #--------------------KEVIN--------------------
 
 def show_hist(self):
-    hist.get_histogram(np.array(self.canvas.true_image, dtype=np.uint8))
+    hist.get_histogram(np.array(self.true_image, dtype=np.uint8))
 
 
 def equalize(self):
-    matrix = hist.equalize(np.array(self.canvas.true_image, dtype=np.uint8))
+    matrix = hist.equalize(np.array(self.true_image, dtype=np.uint8))
     print("Shape" + str(matrix.shape))
     print("element" + str(matrix[0, 0]))
     e = Image.fromarray(np.array(matrix, dtype=np.uint8))
     i = ImageTk.PhotoImage(e)
-    self.canvas.true_image = e
+    self.true_image = e
     self.canvas.image = i
     self.canvas.create_image((0, 0), anchor="nw", image=i)
 
 
-def contrast(self, image,s1,s2):
+def contrast(image,s1,s2):
     matrix = np.array(image)
     out = np.zeros(matrix.shape, dtype=np.uint8)
     if isinstance(matrix[0, 0], np.ndarray):

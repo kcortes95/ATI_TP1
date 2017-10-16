@@ -32,23 +32,6 @@ def multi_prewit(matrix):
     return actions.linear_transform(out).astype(np.uint8)
 
 
-def multi_prewit(matrix):
-    m1 = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]])
-    out1 = mesh.apply_mesh_one_dimension(matrix, m1, 3)
-    m2 = m1.transpose()
-    out2 = mesh.apply_mesh_one_dimension(matrix, m2, 3)
-    m3 = np.array([[-1, -1, 0], [-1, 0, 1], [0, 1, 1]])
-    out3 = mesh.apply_mesh_one_dimension(matrix, m3, 3)
-    m4 = m3.transpose()
-    out4 = mesh.apply_mesh_one_dimension(matrix, m4, 3)
-    out = np.zeros(matrix.shape, dtype=np.int16)
-    for i in range(matrix.shape[0]):
-        for j in range(matrix.shape[1]):
-            out[i, j] = max(abs(out1[i, j]), abs(out2[i, j]), abs(out3[i, j]), abs(out4[i, j]))
-
-    return actions.linear_transform(out).astype(np.uint8)
-
-
 def multi_sobel(matrix):
     m1 = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
     out1 = mesh.apply_mesh_one_dimension(matrix, m1, 3)

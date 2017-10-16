@@ -1,5 +1,5 @@
 def select_pixel(event):
-    print(self.canvas.true_image.getpixel((event.x, event.y)))
+    print(self.true_image.getpixel((event.x, event.y)))
 
 
 def set_pixel(event):
