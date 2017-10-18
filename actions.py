@@ -65,14 +65,14 @@ def save_cropped(self, master):
     self.new_window.canvas.true_cropped.save(filename)
     print(filename)
 
-def get_area_info(self, master):
+def get_area_info(self, matrix):
     pixel_count = abs(self.x_start - self.x_finish) * abs(self.y_start - self.y_finish)
     print("Cantidad de pixeles:" + str(pixel_count))
     xstart = self.x_start if self.x_start < self.x_finish else self.x_finish
     ystart = self.y_start if self.y_start < self.y_finish else self.y_finish
     xfinish = self.x_start if self.x_start > self.x_finish else self.x_finish
     yfinish = self.y_start if self.y_start > self.y_finish else self.y_finish
-    img = self.true_image.load()
+    img = matrix
 
     if isinstance(img[0, 0], tuple):
         if len(img[0,0]) == 4:
@@ -80,15 +80,15 @@ def get_area_info(self, master):
         else:
             total = (0, 0, 0)
 
-        for i in range(xstart, xfinish):
-            for j in range(ystart, yfinish):
+        for j in range(xstart, xfinish):
+            for i in range(ystart, yfinish):
                 total = tuple(map(lambda x, y: x + y, total, img[i, j]))
         print("Promedio:" + str(tuple([x/pixel_count for x in total])))
 
     else:
         total = 0
-        for i in range(xstart, xfinish):
-            for j in range(ystart, yfinish):
+        for j in range(xstart, xfinish):
+            for i in range(ystart, yfinish):
                 total += img[i, j]
         print("Promedio:" + str(total/pixel_count))
 
@@ -621,8 +621,8 @@ def equalize(self):
     e = Image.fromarray(np.array(matrix, dtype=np.uint8))
     i = ImageTk.PhotoImage(e)
     self.true_image = e
-    self.canvas.image = i
-    self.canvas.create_image((0, 0), anchor="nw", image=i)
+    self.canvas[0].image = i
+    self.canvas[0].create_image((0, 0), anchor="nw", image=i)
 
 
 def contrast(image,s1,s2):

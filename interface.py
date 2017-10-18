@@ -15,8 +15,14 @@ class MyFirstGUI:
         self.master = master
         master.minsize(width=640, height=480)
         master.title("Adove Fotoyop")
+        self.next_canvas = 1
         self.image_matrix = []
-        self.canvas = Canvas(master, width=200, height=200, cursor="crosshair")
+        self.canvas = [Canvas(master, width=200, height=200, cursor="crosshair"),
+                       Canvas(master, width=200, height=200, cursor="crosshair"),
+                       Canvas(master, width=200, height=200, cursor="crosshair"),
+                       Canvas(master, width=200, height=200, cursor="crosshair"),
+                       Canvas(master, width=200, height=200, cursor="crosshair"),
+                       Canvas(master, width=200, height=200, cursor="crosshair")]
         self.saved_image = None
         self.true_image = None
 
@@ -133,29 +139,9 @@ class MyFirstGUI:
         root.grid_rowconfigure(0, weight=1)
 
         root.bind_all("<Command-z>", self.undo)
+        root.bind_all("<Command-c>", self.move_canvas)
 
     def open(self):
-
-        def set_area(event):
-            if self.release:
-                self.x_start = event.x
-                self.x_finish = event.x
-            else:
-                self.x_finish = event.x
-
-            if self.release:
-                self.y_start = event.y
-                self.y_finish = event.y
-                self.release = False
-            else:
-                self.y_finish = event.y
-
-            self.canvas.coords(self.canvas.rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
-            self.canvas.tag_raise(self.canvas.rect)
-
-        def release_left():
-            self.release = True
-
         filename = filedialog.askopenfilename(parent=root)
         print(filename)
         if filename.find("RAW") != -1:
@@ -170,17 +156,19 @@ class MyFirstGUI:
             image = Image.open(filename)
             photo = ImageTk.PhotoImage(image)
 
-        self.canvas.image = photo
+        self.canvas[0].image = photo
+        self.canvas[0].true_image = image
         self.true_image = image
         self.image_matrix = []
         self.image_matrix.append(np.array(image))
         width, height = image.size
-        self.canvas.configure(width=width, height=height)
-        self.canvas.create_image((0, 0), anchor="nw", image=photo)
-        self.canvas.bind("<B1-Motion>", set_area)
-        self.canvas.bind("<ButtonRelease-1>", release_left)
-        self.canvas.grid(column=0, row=0)
-        self.canvas.rect = self.canvas.create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
+        self.canvas[0].configure(width=width, height=height)
+        self.canvas[0].create_image((0, 0), anchor="nw", image=photo)
+        self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0))
+        self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e,0))
+        self.canvas[0].grid(column=0, row=0)
+        for i in range(len(self.canvas)):
+            self.canvas[i].rect = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
 
     def save(self):
         filename = filedialog.asksaveasfilename(parent=root)
@@ -196,8 +184,8 @@ class MyFirstGUI:
 
         def apply():
             self.true_image = Image.fromarray(callback(self.image_matrix[-1], int(self.entries[0].get())))
-            self.canvas.image = ImageTk.PhotoImage(self.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+            self.canvas[0].image = ImageTk.PhotoImage(self.true_image)
+            self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
 
         self.cancel_gui()
         self.saved_image = Image.fromarray(self.image_matrix[-1])
@@ -219,8 +207,8 @@ class MyFirstGUI:
         def apply():
             self.true_image = Image.fromarray(
                 callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get())))
-            self.canvas.image = ImageTk.PhotoImage(self.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+            self.canvas[0].image = ImageTk.PhotoImage(self.true_image)
+            self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
 
         self.cancel_gui()
         self.saved_image = self.true_image
@@ -239,11 +227,6 @@ class MyFirstGUI:
         self.labels[position].grid(row=position, column=0)
         self.entries[position].grid(row=position, column=1)
 
-    def border(self, callback):
-        self.true_image = Image.fromarray(callback(np.array(self.true_image)))
-        self.canvas.image = ImageTk.PhotoImage(self.true_image)
-        self.canvas.create_image((0, 0), image=self.canvas.image, anchor="nw")
-
     def slider(self, text, callback, name="Operation"):
         def save():
             self.load_on_canvas(np.asarray(self.true_image))
@@ -252,8 +235,8 @@ class MyFirstGUI:
         def apply(event):
             self.true_image = Image.fromarray(
                 callback(np.array(self.saved_image), int(self.scales[0].get())))
-            self.canvas.image = ImageTk.PhotoImage(self.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+            self.canvas[0].image = ImageTk.PhotoImage(self.true_image)
+            self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
 
         self.cancel_gui()
         self.saved_image = self.true_image
@@ -272,8 +255,8 @@ class MyFirstGUI:
         def apply(event):
             self.true_image = Image.fromarray(
                 callback(np.array(self.saved_image), self.scales[0].get(), self.scales[1].get()))
-            self.canvas.image = ImageTk.PhotoImage(self.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+            self.canvas[0].image = ImageTk.PhotoImage(self.true_image)
+            self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
 
         self.cancel_gui()
         self.saved_image = self.true_image
@@ -301,8 +284,8 @@ class MyFirstGUI:
     def cancel_gui(self):
         if self.saved_image is not None:
             self.true_image = self.saved_image
-            self.canvas.image = ImageTk.PhotoImage(self.true_image)
-            self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+            self.canvas[0].image = ImageTk.PhotoImage(self.true_image)
+            self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
         self.forget()
 
     def forget(self):
@@ -321,14 +304,47 @@ class MyFirstGUI:
 
     def load_on_canvas(self, matrix):
         self.image_matrix += [matrix]
-        self.canvas.image = ImageTk.PhotoImage(Image.fromarray(self.image_matrix[-1]))
-        self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+        self.canvas[0].true_image = Image.fromarray(self.image_matrix[-1])
+        self.canvas[0].image = ImageTk.PhotoImage(self.canvas[0].true_image)
+        self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
 
     def undo(self,event = None):
         self.image_matrix.pop()
-        self.canvas.image = ImageTk.PhotoImage(Image.fromarray(self.image_matrix[-1]))
-        self.canvas.create_image((0, 0), anchor="nw", image=self.canvas.image)
+        self.canvas[0].true_image = Image.fromarray(self.image_matrix[-1])
+        self.canvas[0].image = ImageTk.PhotoImage(self.canvas[0].true_image)
+        self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
 
+    def move_canvas(self,event):
+        self.canvas[self.next_canvas].true_image = Image.fromarray(self.image_matrix[-1])
+        self.canvas[self.next_canvas].image = ImageTk.PhotoImage(self.canvas[self.next_canvas].true_image)
+        self.canvas[self.next_canvas].create_image((0, 0), anchor="nw", image=self.canvas[self.next_canvas].image)
+        self.canvas[self.next_canvas].grid(row=0, column=self.next_canvas)
+        self.canvas[self.next_canvas].configure(width=self.image_matrix[-1].shape[1], height=self.image_matrix[-1].shape[0])
+        index = self.next_canvas
+        self.canvas[self.next_canvas].bind("<B1-Motion>", lambda e: self.set_area(e, index))
+        self.canvas[self.next_canvas].bind("<ButtonRelease-1>", lambda e: self.release_left(e,index))
+        self.next_canvas += 1
+
+    def set_area(self, event, index):
+        if self.release:
+            self.x_start = event.x
+            self.x_finish = event.x
+        else:
+            self.x_finish = event.x
+
+        if self.release:
+            self.y_start = event.y
+            self.y_finish = event.y
+            self.release = False
+        else:
+            self.y_finish = event.y
+
+        self.canvas[index].coords(self.canvas[index].rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
+        self.canvas[index].tag_raise(self.canvas[index].rect)
+
+    def release_left(self,event,index):
+        self.release = True
+        actions.get_area_info(self, np.array(self.canvas[index].true_image))
 root = Tk()
 my_gui = MyFirstGUI(root)
 
