@@ -29,8 +29,8 @@ class MyFirstGUI:
         menubar = Menu(master)
 
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label="Open", command=self.open)
-        filemenu.add_command(label="Save", command=self.save)
+        filemenu.add_command(label="Open", command=lambda: self.open(None,None))
+        filemenu.add_command(label="Save", command=lambda: self.save(None))
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=master.quit)
         menubar.add_cascade(label="File", menu=filemenu)
@@ -140,9 +140,16 @@ class MyFirstGUI:
 
         root.bind_all("<Command-z>", self.undo)
         root.bind_all("<Command-c>", self.move_canvas)
+        root.bind_all("<Command-n>", self.open)
+        root.bind_all("<Command-b>", lambda e: self.open(e, "./src/BARCO.RAW"))
+        root.bind_all("<Command-l>", lambda e: self.open(e, "./src/LENA.RAW"))
+        root.bind_all("<Command-s>", self.save)
 
-    def open(self):
-        filename = filedialog.askopenfilename(parent=root)
+    def open(self, event, name=None):
+        if name is None:
+            filename = filedialog.askopenfilename(parent=root)
+        else:
+            filename = name
         print(filename)
         if filename.find("RAW") != -1:
             with open('raw.json') as json_data:
@@ -170,7 +177,7 @@ class MyFirstGUI:
         for i in range(len(self.canvas)):
             self.canvas[i].rect = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
 
-    def save(self):
+    def save(self, event):
         filename = filedialog.asksaveasfilename(parent=root)
         image = Image.fromarray(actions.linear_transform(np.array(self.true_image)))
         image.save(filename)
