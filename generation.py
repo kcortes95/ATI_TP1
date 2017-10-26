@@ -113,6 +113,10 @@ def gaussian(self,mu,sigma):
             matrix[i, j] = 128 + rand.gauss_random(sigma,mu)
 
     act.matrix_to_window(self, act.linear_transform(matrix),"Ruido Gaussiano","L")
+    """
+    Retorno la matriz de Gauss. La voy a necesitar en el primer paso de Canny.
+    """
+    return act.linear_transform(matrix)
 
 def exponential(self,xi):
     matrix = np.full((300,300),128,dtype=np.int16)
