@@ -1,5 +1,135 @@
+from tkinter import Tk, Toplevel, Scale, Entry, Label, Button, messagebox, Menu, filedialog, Canvas, PhotoImage, LEFT
+from PIL import Image, ImageTk
+import numpy as np
+import canny as canny
+import random
+import myrandom as myrand
+
 #http://www.vision.uji.es/courses/Doctorado/FVC/FVC-T5-DetBordes-Parte1-4p.pdf
 
+"""
+Funciones auxiliares
+"""
+def get_img_type(self):
+    return get_img_type_from_canvas(self, self.canvas[0])
+
+def get_img_type_from_canvas(self, canv):
+    true_img = canv.true_image
+    pixels = true_img.load()
+
+    type = 'RGB'
+    try:
+        len(pixels[0, 0])
+    except TypeError:
+        type = 'L'
+
+    return type
+
+def linear_transform(matrix):
+    return np.interp(matrix, [np.min(matrix),np.max(matrix)], [0,255]).astype(np.uint8)
+
+def matrix_to_window(self, out, title, type):
+    height = out.shape[0]
+    width = out.shape[1]
+
+    self.result_window = Toplevel()
+    self.result_window.minsize(width=width, height=height)
+    self.result_window.title(title)
+    canvas_result = Canvas(self.result_window, height=height, width=width)
+
+    # img = Image.fromarray(np.array(out))
+    # img = Image.fromarray(out, mode=type)
+    out = linear_transform(out)
+    img = Image.fromarray(np.array(out, dtype=np.int16))
+
+    photo = ImageTk.PhotoImage(img)
+    canvas_result.image = photo
+    canvas_result.true_image = img
+    canvas_result.configure(width=width, height=height)
+    canvas_result.create_image((0, 0), image=photo, anchor='nw')
+    canvas_result.grid(row=0,column=0)
+
+    menu = Menu(self.result_window)
+    self.result_window.config(menu=menu)
+    filemenu = Menu(menu, tearoff=0)
+    menu.add_cascade(label="File", menu=filemenu)
+    filemenu.add_command(label="Save", command=lambda: save(self.result_window,canvas_result))
+    filemenu.add_command(label="Load on canvas", command=lambda: to_main_canvas(self, canvas_result))
+    filemenu.add_separator()
+    filemenu.add_command(label="Exit", command=lambda: self.result_window.quit)
+
+"""
+Fin de funciones auxiliares
+"""
+
+#Porcentaje y otros datos hardcodeados
+def canny_function(self):
+    pixels = self.true_image.load()
+    height, width = self.true_image.size
+    img_arr = np.array(self.true_image, dtype=np.int16)
+
+    type = get_img_type(self)
+    len = 1
+    if (type == 'RGB'):
+        len = 3
+
+    #Deshardcodear esto!
+    percentage = 25
+    mu = 10
+    sigma = 0
+
+    #Matrices auxiliares
+    img_gauss = np.zeros((width, height, len), dtype=np.int16)
+    sobel = np.zeros((width, height, len), dtype=np.cfloat)
+    sobel2 = np.zeros((width, height, len), dtype=np.int16)
+    final = np.zeros((width, height, len), dtype=np.int16)
+
+    img_gauss = gauss_noise(self, width, height, img_arr, percentage, mu, sigma, type)
+
+    m = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]); #Mascara de Sobel
+    mp = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]]); #Mascara de Prewit
+    #Aclaro: No uso apply_double_mesh_one_dimension porque yo necesito la inversa de la tangencial (Gy/Gx)
+    sobel = apply_double_mesh_one_dimension_atan(img_gauss, mp)
+
+    sobel2 = supr_no_max(sobel, img_gauss)
+
+    #La idea es hacerlo con Otsu, pero tambien tengo anotado que lo podemos hacer con un slider!!
+    #lo dejo hardcodeado porque no se como es tu implementación, Lucas...
+    t1 = 95
+    t2 = 105
+    final = umbral_histeresis(sobel2, t1, t2, width, height)
+
+    for i in range(width):
+        for j in range(height):
+            print("i: " + str(i) + " j: " + str(j) + " = " + str(final[i,j]))
+
+    #matrix_to_window(self, sobel, "Resultado final", 'L')
+
+def gauss_noise(self, width, height, img_arr, percentage, mu, sigma, type):
+    tot_pixels = int((width * height) * (percentage/100))
+
+    for i in range(tot_pixels):
+        ranx = random.randint(0, width-1)
+        rany = random.randint(0, height-1)
+        img_arr[ranx][rany] = random.gauss(mu,sigma) + np.array(img_arr[ranx][rany])
+
+    #matrix_to_window(self, linear_transform(img_arr), "GAUSS_NOISE  " + str(percentage) + "%", type )
+    return linear_transform(img_arr)
+
+def supr_no_max(matrix_directions, matrix_original):
+    w, h = matrix_original.shape #buscar
+    matrix_to_ret = np.zeros(matrix_original.shape, dtype=np.int16)
+
+    for i in range(w):
+        for j in range(h):
+            if ( i != 0 or i != w-1 or j != 0 or j != h-1 ): #casos de los bordes
+                matrix_to_ret[i,j] = get_value(matrix_original, matrix_directions[i,j], i, j)
+
+    return matrix_to_ret
+
+def get_value(matrix_original, phi, w, h):
+    angle = get_area(phi)
+    return get_val_from_neigh(matrix_original, get_neigh(angle), w, h)
 
 def get_area(phi):
     if (phi >= 0 and phi < 22.5) or (phi >= 157.5 and phi < 180):
@@ -11,30 +141,78 @@ def get_area(phi):
     if phi >= 112.5 and phi < 157.5:
         return 135
 
-#matrix_directions: matriz de direcciones. Es la que tiene todos los valores de áreas de get_area de la matriz.
-def supr_no_max(matrix_directions, matrix_original):
-    width, height = matrix_original.shape #buscar
-    #Quiero una matriz auxiliar con la misma dimensión
+def get_neigh(angle):
+    neighbours = np.zeros((2,2))
+    if angle == 0:
+        neighbours[0] = [-1,0]
+        neighbours[1] = [1,0]
+    if angle == 45:
+        neighbours[0] = [1,-1]
+        neighbours[1] = [-1,1]
+    if angle == 90:
+        neighbours[0] = [0,-1]
+        neighbours[1] = [0,1]
+    if angle == 135:
+        neighbours[0] = [-1,-1]
+        neighbours[1] = [1,1]
 
-    """
-    Cual era la definicion de magnitud de borde -> magnitud del gradiente??? (ver supresión de no máximos)
-    Rta: si. Calcular el gradiente (magnitud de borde)
-    """
-    matrix_to_ret = np.zeros(matrix_original.shape)
-    for i in range(width):
-        for j in range(height):
-            #le paso el phi y la posicion en la que está parado
-            dirs = get_direction(matrix_directions[i,j], i, j)
-            #no se como se hace para acceder al primer valor, creo que es asi
-            neigh_1 = matrix_original[dirs[0,0] , dirs[0,1]]
-            neigh_2 = matrix_original[dirs[1,0] , dirs[1,1]]
+    return neighbours
 
-            """
-            Si la magnitud de cualquiera de los dos pixels adyacentes es mayor que la del pixel en cuestión, entonces borrarlo como borde (diapositiva)
-            """
-            if condition(matrix_original[i,j], neigh_1, neigh_2):
-                #marcar como borde
-                matrix_to_ret[i,j] = matrix_original[i,j]
+def umbral_histeresis(img, t1, t2, w, h):
+    len = 1 #estoy probando a blanco y negro
+    to_ret = np.zeros((w, h), dtype=np.int16)
+
+    for i in range(w):
+        for j in range(h):
+            if ( img[i,j] > t2 ):
+                to_ret[i,j] = 255
+            if ( img[i,j] < t1 ):
+                to_ret[i,j] = 0
             else:
-                matrix_to_ret[i,j] = 0
-                #borrarlo como borde
+                to_ret[i,j] = analize_4_neigh(img, t1, t2, w, h, i, j)
+
+    return to_ret
+
+def analize_4_neigh(img, t1, t2, w, h, i, j):
+    vec = np.zeros((4,2))
+    vec[0] = [ -1, 0 ]
+    vec[1] = [ 0, -1 ]
+    vec[2] = [ 1, 0 ]
+    vec[3] = [ 0, 1 ]
+
+    for k in range(4):
+        if ( i + vec[k][0] >= 0 and i + vec[k][0] < w):
+            if ( j + vec[k][1] >= 0 and j + vec[k][1] < h ):
+                n = img[i + int(vec[k][0])][j + int(vec[k][1])]
+                if ( n < t2 and n >= t1 ):
+                    return 255
+    return 0
+
+def get_val_from_neigh(matrix_original, neighbours, w, h):
+    val = np.zeros(2)
+    me = matrix_original[w,h]
+    val[0] = matrix_original[ int(neighbours[0][0]) , int(neighbours[0][1]) ]
+    val[1] = matrix_original[ int(neighbours[1][0]) , int(neighbours[1][1]) ]
+
+    if( val[0] > me or val[1] > me ):
+        return 0 #no soy borde
+    else:
+        return me
+
+def apply_double_mesh_one_dimension_atan(matrix, mesh):
+    mesh_trans = mesh.transpose()
+    out = np.zeros(matrix.shape, dtype=np.cfloat)
+    radius = 1
+    shape = matrix.shape
+    for i in range(shape[0]):
+        for j in range(shape[1]):
+            if i >= shape[0] - radius or i < radius or j < radius or j >= shape[1] - radius:
+                out[i, j] = matrix[i, j]
+            else:
+                dx = int(np.sum(mesh * matrix[i - radius:i + radius + 1, j - radius:j + radius + 1]))
+                dy = int(np.sum(mesh_trans * matrix[i - radius:i + radius + 1, j - radius:j + radius + 1]))
+                if(dx == 0):
+                    out[i, j] = 0
+                else:
+                    out[i, j] = np.arctan(dy/dx)
+    return out

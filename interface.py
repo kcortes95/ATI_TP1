@@ -8,6 +8,7 @@ import numpy as np
 import meshoperations as mesh
 import anistropic
 import thresholds
+import canny as canny
 
 
 class MyFirstGUI:
@@ -105,6 +106,10 @@ class MyFirstGUI:
         threshold_menu.add_command(label="Threshold", command=lambda: self.slider("Umbral", thresholds.threshold, "Threshold"))
         threshold_menu.add_command(label="Otsu", command=lambda: self.apply_method(thresholds.otsu))
         menubar.add_cascade(menu=threshold_menu, label="Threshold")
+
+        filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label="Canny", command=lambda: canny.canny_function(self))
+        menubar.add_cascade(label="Detector", menu=filemenu)
 
         master.config(menu=menubar)
         self.menubar = menubar

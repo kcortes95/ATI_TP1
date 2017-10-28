@@ -87,4 +87,5 @@ def otsu(matrix):
             max = i
             max_val = var[i]
 
+    print("EL METODO DE OTSU DEVUELVE COMO MAX: " + str(max))
     return threshold(matrix, max)

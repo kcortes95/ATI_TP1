@@ -376,20 +376,14 @@ def gaussian_window_values(self, width, height, img_arr, percentage, type):
 
 def ret_gaussian_window(self, width, height, img_arr, percentage, mu, sigma, type):
     tot_pixels = int((width * height) * (percentage/100))
-    print("w: " + str(width))
-    print("h: " + str(height))
-    print("tot_pixels: " + str(tot_pixels))
-    print("%: " + str(percentage))
-    print("mu: " + str(mu))
-    print("sigma: " + str(sigma))
 
     for i in range(tot_pixels):
         ranx = random.randint(0, width-1)
         rany = random.randint(0, height-1)
-        # print("W: " + str(width) + " H: " + str(height) + " ||| " + "RANDOM X: " + str(ranx) + " RANDOM Y: " + str(rany))
         img_arr[ranx][rany] = random.gauss(mu,sigma) + np.array(img_arr[ranx][rany])
 
     matrix_to_window(self, linear_transform(img_arr), "Gaussian " + str(percentage) + "%", type )
+    return linear_transform(img_arr)
 
 def rayleigh_window_values(self, width, height, img_arr, percentage, type):
     self.g_win = Toplevel()
