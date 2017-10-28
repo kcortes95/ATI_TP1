@@ -93,17 +93,25 @@ def canny_function(self):
 
     sobel2 = supr_no_max(sobel, img_gauss)
 
+    """
+    for i in range(width):
+        for j in range(height):
+            print("i: " + str(i) + " j: " + str(j) + " = " + str(sobel2[i,j]))
+    """
+
     #La idea es hacerlo con Otsu, pero tambien tengo anotado que lo podemos hacer con un slider!!
     #lo dejo hardcodeado porque no se como es tu implementación, Lucas...
-    t1 = 95
-    t2 = 105
+    t1 = 180
+    t2 = 170
     final = umbral_histeresis(sobel2, t1, t2, width, height)
 
+    """
     for i in range(width):
         for j in range(height):
             print("i: " + str(i) + " j: " + str(j) + " = " + str(final[i,j]))
+    """
 
-    #matrix_to_window(self, sobel, "Resultado final", 'L')
+    matrix_to_window(self, final, "Resultado final", 'L')
 
 def gauss_noise(self, width, height, img_arr, percentage, mu, sigma, type):
     tot_pixels = int((width * height) * (percentage/100))
@@ -159,7 +167,7 @@ def get_neigh(angle):
     return neighbours
 
 def umbral_histeresis(img, t1, t2, w, h):
-    len = 1 #estoy probando a blanco y negro
+
     to_ret = np.zeros((w, h), dtype=np.int16)
 
     for i in range(w):
@@ -168,7 +176,7 @@ def umbral_histeresis(img, t1, t2, w, h):
                 to_ret[i,j] = 255
             if ( img[i,j] < t1 ):
                 to_ret[i,j] = 0
-            else:
+            if ( img[i,j] <= t2 and img[i,j] >= t1 ):
                 to_ret[i,j] = analize_4_neigh(img, t1, t2, w, h, i, j)
 
     return to_ret
