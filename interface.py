@@ -68,13 +68,10 @@ class MyFirstGUI:
 
         filter_menu = Menu(menubar, tearoff=0)
         filter_menu.add_command(label="Mean", command=lambda: self.text_box(mesh.mean_filter, "Size", "Mean Filter"))
-        filter_menu.add_command(label="Median",
-                                command=lambda: self.text_box(mesh.median_filter, "Size", "Median Filter"))
-        filter_menu.add_command(label="Gauss", command=lambda: self.double_text_box(mesh.gauss_filter, "Size", "Sigma",
-                                                                                    "Gauss Filter"))
+        filter_menu.add_command(label="Median", command=lambda: self.text_box(mesh.median_filter, "Size", "Median Filter"))
+        filter_menu.add_command(label="Gauss", command=lambda: self.double_text_box(mesh.gauss_filter, "Size", "Sigma", "Gauss Filter"))
         filter_menu.add_command(label="Weighted Mean", command=lambda: self.apply_method(mesh.weighted_mean_filter, 3))
-        filter_menu.add_command(label="Weighted Median",
-                                command=lambda: self.apply_method(mesh.weighted_median_filter, 3))
+        filter_menu.add_command(label="Weighted Median", command=lambda: self.apply_method(mesh.weighted_median_filter, 3))
         filter_menu.add_command(label="High-Pass", command=lambda: self.apply_method(mesh.highpass_filter, 3))
         menubar.add_cascade(menu=filter_menu, label="Filters")
 
@@ -87,33 +84,25 @@ class MyFirstGUI:
         border_menu.add_command(label="Param Laplace", command=lambda: self.slider("Laplace", border.laplace))
         border_menu.add_command(label="Intelligent Laplace", command=lambda: self.apply_method(border.intelligent_laplace))
 
-        border_menu.add_command(label="Laplace - Gauss",
-                                command=lambda: self.text_box(border.laplace_gauss, "Sigma", 'Laplace - Gauss'))
+        border_menu.add_command(label="Laplace - Gauss", command=lambda: self.text_box(border.laplace_gauss, "Sigma", 'Laplace - Gauss'))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
-        difansi.add_command(label="Leclerc",
-                            command=lambda: self.double_text_box(anistropic.leclerc, "Iterations", "Sigma", "Leclerc"))
-        difansi.add_command(label="Lorentziano",
-                            command=lambda: self.double_text_box(anistropic.lorentziano, "Iterations", "Sigma",
-                                                                 "Lorentz"))
-        difansi.add_command(label="Isotropic",
-                            command=lambda: self.text_box(anistropic.isotropic, "Iterations", "Isotropic"))
+        difansi.add_command(label="Leclerc", command=lambda: self.double_text_box(anistropic.leclerc, "Iterations", "Sigma", "Leclerc"))
+        difansi.add_command(label="Lorentziano", command=lambda: self.double_text_box(anistropic.lorentziano, "Iterations", "Sigma", "Lorentz"))
+        difansi.add_command(label="Isotropic", command=lambda: self.text_box(anistropic.isotropic, "Iterations", "Isotropic"))
         menubar.add_cascade(menu=difansi, label="Dif")
 
         noise_menu = Menu(menubar, tearoff=0)
         noise_menu.add_command(label="Gaussian", command=lambda: actions.percentage_textbox(self, 'gaussian'))
         noise_menu.add_command(label="Rayleigh", command=lambda: actions.percentage_textbox(self, 'rayleigh'))
         noise_menu.add_command(label="Exponential", command=lambda: actions.percentage_textbox(self, 'exponential'))
-        noise_menu.add_command(label="Salt & Pepper",
-                               command=lambda: actions.percentage_textbox(self, 'salt_and_pepper'))
+        noise_menu.add_command(label="Salt & Pepper", command=lambda: actions.percentage_textbox(self, 'salt_and_pepper'))
         menubar.add_cascade(menu=noise_menu, label="Noise")
 
         threshold_menu = Menu(menubar, tearoff=0)
-        threshold_menu.add_command(label="Global Threshold",
-                                   command=lambda: self.apply_method(thresholds.global_threshold))
-        threshold_menu.add_command(label="Threshold",
-                                   command=lambda: self.slider("Umbral", thresholds.threshold, "Threshold"))
+        threshold_menu.add_command(label="Global Threshold", command=lambda: self.apply_method(thresholds.global_threshold))
+        threshold_menu.add_command(label="Threshold", command=lambda: self.slider("Umbral", thresholds.threshold, "Threshold"))
         threshold_menu.add_command(label="Otsu", command=lambda: self.apply_method(thresholds.otsu))
         menubar.add_cascade(menu=threshold_menu, label="Threshold")
 

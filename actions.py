@@ -139,7 +139,7 @@ def to_negative(self):
     # matrix_to_window(self, img_neg, "Negative", type)
 
 def get_img_type(self):
-    return get_img_type_from_canvas(self, self.canvas)
+    return get_img_type_from_canvas(self, self.canvas[0])
 
 def get_img_type_from_canvas(self, canv):
     true_img = canv.true_image
@@ -339,6 +339,7 @@ def generic_window(self, percentage, action):
     img_arr = np.array(self.true_image, dtype=np.int16)
 
     type = get_img_type(self)
+    #type = 'L'
 
     if percentage < 0 or percentage > 100:
         err_msg("Invalid percentage")
