@@ -4,6 +4,7 @@ import numpy as np
 import canny as canny
 import random
 import myrandom as myrand
+import meshoperations as mesh
 
 #http://www.vision.uji.es/courses/Doctorado/FVC/FVC-T5-DetBordes-Parte1-4p.pdf
 
@@ -77,19 +78,16 @@ def canny_function(self):
     percentage = 25
     mu = 10
     sigma = 0
-    #La idea es hacerlo con Otsu, pero tambien tengo anotado que lo podemos hacer con un slider!!
-    #lo dejo hardcodeado porque no se como es tu implementación, Lucas...
-    t1 = 150
-    t2 = 155
 
     #Matrices auxiliares
     img_gauss = np.zeros((width, height, len), dtype=np.int16)
     phis = np.zeros((width, height, len), dtype=np.cfloat)
-    sobel2 = np.zeros((width, height, len), dtype=np.int16)
+    img_2 = np.zeros((width, height, len), dtype=np.int16)
     final = np.zeros((width, height, len), dtype=np.int16)
 
     #1 - aplicar GAUSS
-    img_gauss = gauss_noise(self, width, height, img_arr, percentage, mu, sigma, type)
+
+    img_gauss = mesh.gauss_filter(img_arr, 5, 1);
 
     m = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]); #Mascara de Sobel
     mp = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]]); #Mascara de Prewit
@@ -97,33 +95,22 @@ def canny_function(self):
     #PHIS es la matriz de arctan de Dy/Dx
     phis = apply_double_mesh_one_dimension_atan(img_gauss, m)
 
-    sobel2 = supr_no_max(phis, img_gauss)
+    img_2 = supr_no_max(phis, img_gauss)
 
-    final = umbral_histeresis(sobel2, t1, t2, width, height)
+    final = umbral_histeresis(img_2, width, height)
 
     matrix_to_window(self, final, "Resultado final", 'L')
 
-def gauss_noise(self, width, height, img_arr, percentage, mu, sigma, type):
-    tot_pixels = int((width * height) * (percentage/100))
-
-    for i in range(tot_pixels):
-        ranx = random.randint(0, width-1)
-        rany = random.randint(0, height-1)
-        img_arr[ranx][rany] = random.gauss(mu,sigma) + np.array(img_arr[ranx][rany])
-
-    #matrix_to_window(self, linear_transform(img_arr), "GAUSS_NOISE  " + str(percentage) + "%", type )
-    return linear_transform(img_arr)
-
 def supr_no_max(matrix_directions, matrix_original):
     w, h = matrix_original.shape #buscar
-    matrix_to_ret = np.zeros(matrix_original.shape, dtype=np.int16)
+    to_ret = np.zeros((w, h, 1), dtype=np.int16)
 
     for i in range(w):
         for j in range(h):
             if ( i != 0 or i != w-1 or j != 0 or j != h-1 ): #casos de los bordes
-                matrix_to_ret[i,j] = get_value(matrix_original, matrix_directions[i,j], i, j, w, h)
+                to_ret[i,j] = get_value(matrix_original, matrix_directions[i,j], i, j, w, h)
 
-    return matrix_to_ret
+    return to_ret
 
 def get_value(matrix_original, phi, i, j, w, h):
     angle = get_area(phi)
@@ -160,22 +147,28 @@ def get_val_from_neigh(matrix_original, neighbours, i, j, w, h):
     val = np.zeros(2)
     me = matrix_original[i,j]
 
-    if( (i + int(neighbours[0][0])) != w and (j + int(neighbours[0][1])) != h ):
+    if( (i + int(neighbours[0][0])) >= 0 and (i + int(neighbours[0][0])) < w and (j + int(neighbours[0][1])) >= 0 and (j + int(neighbours[0][1])) < h):
         val[0] = matrix_original[ i + int(neighbours[0][0]) , j + int(neighbours[0][1]) ]
     else:
         val[0] = 0
 
-    if( (i + int(neighbours[1][0])) != w and (j + int(neighbours[1][1])) != h ):
+    if( (i + int(neighbours[1][0])) >= 0 and (i + int(neighbours[1][0])) < w and (j + int(neighbours[1][1])) >= 0 and (j + int(neighbours[1][1])) < h):
         val[1] = matrix_original[ i + int(neighbours[1][0]) , j + int(neighbours[1][1]) ]
     else:
         val[1] = 0
 
-    if( val[0] > me or val[1] > me ):
+    if( val[0] >= me or val[1] >= me ):
         return 0 #no soy borde
     else:
         return me
 
-def umbral_histeresis(img, t1, t2, w, h):
+def umbral_histeresis(img, w, h):
+
+    #La idea es hacerlo con Otsu, pero tambien tengo anotado que lo podemos hacer con un slider!!
+    #lo dejo hardcodeado porque no se como es tu implementación, Lucas...
+    #el umbral segun otzu es 101
+    t1 = 99
+    t2 = 101
 
     to_ret = np.zeros((w, h), dtype=np.int16)
 
@@ -201,7 +194,8 @@ def analize_4_neigh(img, t1, t2, w, h, i, j):
         if ( i + vec[k][0] >= 0 and i + vec[k][0] < w):
             if ( j + vec[k][1] >= 0 and j + vec[k][1] < h ):
                 n = img[i + int(vec[k][0])][j + int(vec[k][1])]
-                if ( n > t2 ):
+                #Los pixels cuya magnitud de borde está entre t1 y t2 y están conectados con un borde, se marcan también como borde
+                if ( n == 255 ):
                     return 255
     return 0
 
