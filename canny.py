@@ -108,9 +108,10 @@ def supr_no_max(matrix_directions, matrix_original):
     for i in range(w):
         for j in range(h):
             if ( i != 0 or i != w-1 or j != 0 or j != h-1 ): #casos de los bordes
-                to_ret[i,j] = get_value(matrix_original, matrix_directions[i,j], i, j, w, h)
+                #aca no se si tengo que ir pisando los valores o que...
+                matrix_original[i,j] = get_value(matrix_original, matrix_directions[i,j], i, j, w, h)
 
-    return to_ret
+    return matrix_original
 
 def get_value(matrix_original, phi, i, j, w, h):
     angle = get_area(phi)
