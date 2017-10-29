@@ -4,7 +4,9 @@ import myrandom as rand
 import random as rd
 
 from tkinter import Tk, Entry, Toplevel,Scale, Label, LabelFrame, Button, messagebox, Menu, filedialog, Canvas, PhotoImage
-def generate_square(self):
+
+
+def generate_square(m):
     white = 255
     img_size = 200
     img_matrix = generate_empty(img_size)
@@ -12,14 +14,12 @@ def generate_square(self):
         for y in range(40, img_size-40):
             img_matrix[x, y] = white
 
-    print(img_matrix.size)
-
-    act.load_image_on_canvas(self,img_matrix)
+    return img_matrix
 
     print("generate_square: DONE")
 
 
-def generate_circle(self):
+def generate_circle(m):
     white = 255
     img_size = 200
     img_matrix = generate_empty(img_size)
@@ -29,17 +29,16 @@ def generate_circle(self):
             if (x-center)*(x-center) + (y-center)*(y-center) < 50*50:
                 img_matrix[x, y] = white
 
-    act.load_image_on_canvas(self, img_matrix)
+    return img_matrix
 
 
-def generate_degrade(self):
+def generate_degrade(m):
     matrix = np.zeros((255, 100), dtype=np.uint8)
     for y in range(0, 255):
         for x in range(0, 100):
             matrix[y][x] = y
 
-    print(matrix)
-    act.load_image_on_canvas(self, matrix)
+    return matrix
 
 
 def generate_color_degrade(self):

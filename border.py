@@ -2,6 +2,7 @@ import meshoperations as mesh
 import numpy as np
 import math
 import actions
+import thresholds
 from scipy import signal
 
 
@@ -90,3 +91,46 @@ def laplace_gauss(matrix, std):
     print(sum(sum(m)))
     ma = signal.convolve2d(matrix, m, "same", "symm")
     return zero_cross(ma)
+
+def hough(matrix,self):
+    aux = prewit(matrix)
+    aux = thresholds.threshold(aux, 128)
+    D = max(aux.shape)
+    size = 15
+    p_range = 2 * math.sqrt(2) * D
+    a_max = size
+    b_max = size
+    acumulator = np.zeros((a_max+1, b_max+1), dtype=np.uint32)
+    e = 0.9
+    for y in range(aux.shape[0]):
+        for x in range(aux.shape[1]):
+            if aux[y, x] == 255:
+                for a in range(a_max + 1):
+                    ai = -math.pi/2 + (a/size)*math.pi
+                    for b in range(b_max + 1):
+                        bi = -p_range/2 + (b/size)*p_range
+                        print(bi)
+                        if abs(bi - x*math.cos(ai) - y*math.sin(ai)) < e:
+                            acumulator[a, b] += 1
+
+    m = np.max(acumulator)
+    points = get_tops(acumulator, m)
+    np.set_printoptions(threshold=np.inf)
+    for (a, b) in points:
+        ai = -math.pi / 2 + (a / size) * math.pi
+        bi = -p_range / 2 + (b / size) * p_range
+        if math.sin(ai) == 0:
+            self.canvas[0].create_line(bi, 0, bi, aux.shape[0], fill="red")
+        else:
+            self.canvas[0].create_line(0, bi/math.sin(ai), aux.shape[1], bi/math.sin(ai) - aux.shape[1]*math.cos(ai)/math.sin(ai), fill="red")
+    return matrix
+
+
+def get_tops(acumulator, m):
+    thres = m*0.8
+    res = []
+    for a in range(acumulator.shape[0]):
+        for b in range(acumulator.shape[1]):
+            if acumulator[a, b] > thres:
+                res.append((a, b))
+    return res

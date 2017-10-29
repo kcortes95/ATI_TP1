@@ -58,9 +58,9 @@ class MyFirstGUI:
         menubar.add_cascade(menu=datamenu, label="Data")
 
         gimagemenu = Menu(menubar, tearoff=0)
-        gimagemenu.add_command(label="Circle", command=lambda: gen.generate_circle(self))
-        gimagemenu.add_command(label="Square", command=lambda: gen.generate_square(self))
-        gimagemenu.add_command(label="Degrade", command=lambda: gen.generate_degrade(self))
+        gimagemenu.add_command(label="Circle", command=lambda: self.apply_method(gen.generate_circle))
+        gimagemenu.add_command(label="Square", command=lambda: self.apply_method(gen.generate_square))
+        gimagemenu.add_command(label="Degrade", command=lambda: self.apply_method(gen.generate_degrade))
         gimagemenu.add_command(label="Rayleigh", command=lambda: gen.generate_rayleigh(self))
         gimagemenu.add_command(label="Gauss", command=lambda: gen.generate_gaussian(self))
         gimagemenu.add_command(label="Exponential", command=lambda: gen.generate_exponential(self))
@@ -81,11 +81,14 @@ class MyFirstGUI:
         border_menu.add_command(label="Sobel", command=lambda: self.apply_method(border.sobel))
         border_menu.add_command(label="Multi Prewit", command=lambda: self.apply_method(border.multi_prewit))
         border_menu.add_command(label="Multi Sobel", command=lambda: self.apply_method(border.multi_sobel))
+        border_menu.add_separator()
         border_menu.add_command(label="Laplace", command=lambda: self.apply_method(border.laplace))
         border_menu.add_command(label="Param Laplace", command=lambda: self.slider("Laplace", border.laplace))
         border_menu.add_command(label="Intelligent Laplace", command=lambda: self.apply_method(border.intelligent_laplace))
-
-        border_menu.add_command(label="Laplace - Gauss", command=lambda: self.text_box(border.laplace_gauss, "Sigma", 'Laplace - Gauss'))
+        border_menu.add_command(label="Laplace - Gauss",
+                                command=lambda: self.text_box(border.laplace_gauss, "Sigma", 'Laplace - Gauss'))
+        border_menu.add_separator()
+        border_menu.add_command(label="Hough", command=lambda: self.apply_method(border.hough, self))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
@@ -139,6 +142,9 @@ class MyFirstGUI:
         root.bind_all("<Command-l>", lambda e: self.open(e, "./src/LENA.RAW"))
         root.bind_all("<Command-s>", self.save)
 
+        self.canvas[0].grid(column=0, row=0)
+        self.canvas[0].true_image = []
+
     def open(self, event, name=None):
         if name is None:
             filename = filedialog.askopenfilename(parent=root)
@@ -167,7 +173,7 @@ class MyFirstGUI:
         self.canvas[0].create_image((0, 0), anchor="nw", image=photo)
         self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0))
         self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e,0))
-        self.canvas[0].grid(column=0, row=0)
+
         for i in range(len(self.canvas)):
             self.canvas[i].rect = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
 
@@ -230,7 +236,7 @@ class MyFirstGUI:
 
     def slider(self, text, callback, name="Operation"):
         def save():
-            self.load_on_canvas(np.asarray(self.true_image))
+            self.load_on_canvas(np.asarray(self.canvas[0].true_image))
             self.forget()
 
         def apply(event):
@@ -250,7 +256,7 @@ class MyFirstGUI:
 
     def double_slider(self, text1, text2, callback, name="Operation"):
         def save():
-            self.load_on_canvas(np.asarray(self.true_image))
+            self.load_on_canvas(np.asarray(self.canvas[0].true_image))
             self.forget()
 
         def apply(event):
@@ -278,9 +284,11 @@ class MyFirstGUI:
 
     def apply_method(self, method, param=-1):
         if param == -1:
-            self.load_on_canvas(method(np.array(self.true_image)))
+            self.load_on_canvas(method(np.array(self.canvas[0].true_image)))
+        elif param == self:
+            method(np.array(self.canvas[0].true_image), param)
         else:
-            self.load_on_canvas(method(np.array(self.true_image), param))
+            self.load_on_canvas(method(np.array(self.canvas[0].true_image), param))
 
     def cancel_gui(self):
         if self.saved_image is not None:
