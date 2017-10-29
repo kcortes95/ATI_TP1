@@ -111,7 +111,7 @@ class MyFirstGUI:
         menubar.add_cascade(menu=threshold_menu, label="Threshold")
 
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label="Canny", command=lambda: canny.canny_function(self))
+        filemenu.add_command(label="Canny", command=lambda: self.apply_method(canny.canny_function))
         menubar.add_cascade(label="Detector", menu=filemenu)
 
         master.config(menu=menubar)

@@ -89,3 +89,25 @@ def otsu(matrix):
 
     print("EL METODO DE OTSU DEVUELVE COMO MAX: " + str(max))
     return threshold(matrix, max)
+
+
+def otsu_threshold(matrix):
+    matrix = np.array(matrix, dtype=np.uint8)
+    buck = hist.get_bucket(matrix.flatten()) / (matrix.shape[0] * matrix.shape[1])
+    acum = hist.get_acum(buck)
+    m = np.zeros(256)
+    for i in range(1, 256):
+        m[i] = i * buck[i] + m[i - 1]
+    mg = m[255]
+
+    var = np.zeros(256)
+    max = 0
+    max_val = pow(mg * acum[0] - m[0], 2) / (acum[0] * (1 - acum[0]))
+    for i in range(1, 256-1):
+        var[i] = pow(mg * acum[i] - m[i], 2) / (acum[i] * (1 - acum[i]))
+        if var[i] > max_val:
+            max = i
+            max_val = var[i]
+
+    print("EL METODO DE OTSU DEVUELVE COMO MAX: " + str(max))
+    return max

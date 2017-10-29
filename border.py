@@ -16,10 +16,6 @@ def sobel(matrix):
     return mesh.apply_double_mesh(matrix, m)
 
 
-"""
-Este es el segundo metodo que necesito para hacer Canny??
-O solo uso el apply_mesh_one_dimension ?? <<-- Esto es lo que en realidad necesito
-"""
 def multi_prewit(matrix):
     m1 = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]])
     out1 = mesh.apply_mesh_one_dimension(matrix, m1, 3)
