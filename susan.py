@@ -29,7 +29,6 @@ def apply_mesh(matrix, mesh, size, threshold):
         return actions.linear_transform(apply_mesh_one_dimension(matrix,mesh,size, threshold)).astype(np.uint8)
 
 def apply_mesh_one_dimension(matrix, mesh, size, threshold):
-    print("SUSAAAN")
 
     width, height = matrix.shape
     out = np.zeros(matrix.shape, dtype=np.float32)
@@ -41,12 +40,12 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
             if i >= shape[0] - radius or i < radius or j < radius or j >= shape[1] - radius:
                 out[i, j] = matrix[i, j]
             else:
-                out[i][j] = calculate(matrix, i, j, width, height, threshold)
+                out[i][j] = calculate(matrix, mesh, i, j, width, height, threshold)
 
     return out
 
 
-def calculate(matrix, i, j, width, height, threshold):
+def calculate(matrix, mesh, i, j, width, height, threshold):
     sum = 0
     central_pixel = matrix[i][j]
 
