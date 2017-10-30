@@ -9,6 +9,7 @@ import meshoperations as mesh
 import anistropic
 import thresholds
 import canny as canny
+import susan as susan
 
 
 class MyFirstGUI:
@@ -112,6 +113,7 @@ class MyFirstGUI:
 
         filemenu = Menu(menubar, tearoff=0)
         filemenu.add_command(label="Canny", command=lambda: self.apply_method(canny.canny_function))
+        filemenu.add_command(label="Susan", command=lambda: self.apply_method(susan.susan_function))
         menubar.add_cascade(label="Detector", menu=filemenu)
 
         master.config(menu=menubar)
