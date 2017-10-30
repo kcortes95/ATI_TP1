@@ -40,12 +40,20 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
                 out[i, j] = matrix[i, j]
             else:
                 sum = 0
-                central_pixel = matrix[i+radius][j+radius]
-                for k in range(7):
-                    for l in range(7):
-                        if(matrix[i + k][j + l] * mesh[i + k][j + l] != 0):
-                            if( math.fabs(matrix[i + k][j + l] - central_pixel) < threshold ):
-                                sum += 1
+                central_pixel = matrix[i][j]
+
+                for k in range(-3,4):
+                    for l in range(-3,4):
+                        sum = 0
+                        posx = i + k
+                        posy = j + l
+
+                        if (posx < 0 or posx >= width or posy < 0 or posy >= height):
+                            print("")
+                        else:
+                            if(matrix[posx][posy] * mesh[k + 3][l + 3] != 0):
+                                if( math.fabs(matrix[posx][posy] - central_pixel) < threshold ):
+                                    sum += 1
 
                 tot = 1 - sum/49 #49 total en la máscara
 
@@ -53,7 +61,7 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
                     #borde
                     out[i][j] = 255
 
-                if( math.fabs(tot - 0.75) < 0.1 )
+                if( math.fabs(tot - 0.75) < 0.1 ):
                     #esquina
                     out[i][j] = 255
 
