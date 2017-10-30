@@ -29,6 +29,8 @@ def apply_mesh(matrix, mesh, size, threshold):
         return actions.linear_transform(apply_mesh_one_dimension(matrix,mesh,size, threshold)).astype(np.uint8)
 
 def apply_mesh_one_dimension(matrix, mesh, size, threshold):
+    print("SUSAAAN")
+
     width, height = matrix.shape
     out = np.zeros(matrix.shape, dtype=np.float32)
     radius = int(size / 2)
@@ -39,32 +41,31 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
             if i >= shape[0] - radius or i < radius or j < radius or j >= shape[1] - radius:
                 out[i, j] = matrix[i, j]
             else:
-                sum = 0
-                central_pixel = matrix[i][j]
-
-                for k in range(-3,4):
-                    for l in range(-3,4):
-                        sum = 0
-                        posx = i + k
-                        posy = j + l
-
-                        if (posx < 0 or posx >= width or posy < 0 or posy >= height):
-                            print("")
-                        else:
-                            if(matrix[posx][posy] * mesh[k + 3][l + 3] != 0):
-                                if( math.fabs(matrix[posx][posy] - central_pixel) < threshold ):
-                                    sum += 1
-
-                tot = 1 - sum/49 #49 total en la máscara
-
-                out[i][j] = matrix[i][j]
-
-                if( math.fabs(tot - 0.5) < 0.1 ):
-                    #borde
-                    out[i][j] = 255
-
-                if( math.fabs(tot - 0.75) < 0.1 ):
-                    #esquina
-                    out[i][j] = 255
+                out[i][j] = calculate(matrix, i, j, width, height, threshold)
 
     return out
+
+
+def calculate(matrix, i, j, width, height, threshold):
+    sum = 0
+    central_pixel = matrix[i][j]
+
+    for k in range(-3,4):
+        for l in range(-3,4):
+            posx = i + k
+            posy = j + l
+
+            if (posx >= 0 or posx < width or posy >= 0 or posy < height):
+                if(matrix[posx][posy] * mesh[k + 3][l + 3] != 0):
+                    if( math.fabs(matrix[posx][posy] - central_pixel) < threshold ):
+                        sum += 1
+
+    tot = 1 - sum/49 #49 total en la máscara (CREO)
+
+    if( math.fabs(tot - 0.5) < 0.1 ):
+        return 255
+
+    if( math.fabs(tot - 0.75) < 0.1 ):
+        return 255
+
+    return 0
