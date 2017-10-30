@@ -57,6 +57,8 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
 
                 tot = 1 - sum/49 #49 total en la máscara
 
+                out[i][j] = matrix[i][j]
+
                 if( math.fabs(tot - 0.5) < 0.1 ):
                     #borde
                     out[i][j] = 255
