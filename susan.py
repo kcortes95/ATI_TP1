@@ -16,19 +16,6 @@ def susan_function(matrix):
 
     img_aux = apply_mesh(img_arr, circular_mask, 7, 27)
 
-def calculate_s(img, threshold, i, j, width, height):
-    sum = 0;
-
-    for k in range(7):
-        for l in range(7):
-            posx = k + i
-            posy = l + j
-            if(posx >= 0 and posx < width and posy >= 0 and posy < height):
-                #img[posx + 3][posy + 3] -> es el valor del centro
-                if( math.fabs(img[posx][posy] - img[posx + 3][posy + 3]) < threshold):
-                    sum += 1
-
-    return 1 - sum/49 #49 es la cantidad de elementos en la máscara
 
 def apply_mesh(matrix, mesh, size, threshold):
     shape = matrix.shape
@@ -46,16 +33,28 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
     out = np.zeros(matrix.shape, dtype=np.float32)
     radius = int(size / 2)
     shape = matrix.shape
+    print("radius: " + str(radius))
     for i in range(shape[0]):
         for j in range(shape[1]):
             if i >= shape[0] - radius or i < radius or j < radius or j >= shape[1] - radius:
                 out[i, j] = matrix[i, j]
             else:
-                if( math.fabs(calculate_s(matrix, threshold, i, j, width, height) - 0.5) < 0.10 ):
-                    #es border
-                    out[i, j] = 255;
-                if( math.fabs(calculate_s(matrix, threshold, i, j, width, height) - 0.75) < 0.10 ):
-                    #es esquina
-                    out[i, j] = 255;
+                sum = 0
+                central_pixel = matrix[i+radius][j+radius]
+                for k in range(7):
+                    for l in range(7):
+                        if(matrix[i + k][j + l] * mesh[i + k][j + l] != 0):
+                            if( math.fabs(matrix[i + k][j + l] - central_pixel) < threshold ):
+                                sum += 1
+
+                tot = 1 - sum/49 #49 total en la máscara
+
+                if( math.fabs(tot - 0.5) < 0.1 ):
+                    #borde
+                    out[i][j] = 255
+
+                if( math.fabs(tot - 0.75) < 0.1 )
+                    #esquina
+                    out[i][j] = 255
 
     return out
