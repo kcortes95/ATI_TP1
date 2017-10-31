@@ -88,37 +88,40 @@ def laplace_gauss(matrix, std):
     ma = signal.convolve2d(matrix, m, "same", "symm")
     return zero_cross(ma)
 
-def hough(matrix,self):
+
+def hough(matrix, a, b, self):
     aux = prewit(matrix)
     aux = thresholds.threshold(aux, 128)
     D = max(aux.shape)
-    size = 15
     p_range = 2 * math.sqrt(2) * D
-    a_max = size
-    b_max = size
+    a_max = a
+    b_max = b
     acumulator = np.zeros((a_max+1, b_max+1), dtype=np.uint32)
     e = 0.9
+    cos_a = np.zeros(a_max + 1, dtype=np.float32)
+    sin_a = np.zeros(a_max + 1, dtype=np.float32)
+    for a_i in range(a_max+1):
+        cos_a[a_i] = math.cos(-math.pi/2 + (a_i/a_max)*math.pi)
+        sin_a[a_i] = math.sin(-math.pi/2 + (a_i/a_max)*math.pi)
+
     for y in range(aux.shape[0]):
         for x in range(aux.shape[1]):
             if aux[y, x] == 255:
                 for a in range(a_max + 1):
-                    ai = -math.pi/2 + (a/size)*math.pi
                     for b in range(b_max + 1):
-                        bi = -p_range/2 + (b/size)*p_range
-                        print(bi)
-                        if abs(bi - x*math.cos(ai) - y*math.sin(ai)) < e:
+                        bi = -p_range/2 + (b/b_max)*p_range
+                        if abs(bi - x*cos_a[a] - y*sin_a[a]) < e:
                             acumulator[a, b] += 1
 
     m = np.max(acumulator)
     points = get_tops(acumulator, m)
     np.set_printoptions(threshold=np.inf)
     for (a, b) in points:
-        ai = -math.pi / 2 + (a / size) * math.pi
-        bi = -p_range / 2 + (b / size) * p_range
-        if math.sin(ai) == 0:
+        bi = -p_range / 2 + (b / b_max) * p_range
+        if sin_a[a] == 0:
             self.canvas[0].create_line(bi, 0, bi, aux.shape[0], fill="red")
         else:
-            self.canvas[0].create_line(0, bi/math.sin(ai), aux.shape[1], bi/math.sin(ai) - aux.shape[1]*math.cos(ai)/math.sin(ai), fill="red")
+            self.canvas[0].create_line(0, bi/sin_a[a], aux.shape[1], bi/sin_a[a] - aux.shape[1]*cos_a[a]/sin_a[a], fill="red")
     return matrix
 
 

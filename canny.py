@@ -81,12 +81,6 @@ def canny_function(matrix):
     mu = 10
     sigma = 0
 
-    # Matrices auxiliares
-    img_gauss = np.zeros(matrix.shape, dtype=np.int16)
-    phis = np.zeros(matrix.shape, dtype=np.cfloat)
-    img_2 = np.zeros(matrix.shape, dtype=np.int16)
-    final = np.zeros(matrix.shape, dtype=np.int16)
-
     # 1 - aplicar GAUSS
 
     img_gauss = mesh.gauss_filter(img_arr, 7, 1)
@@ -211,7 +205,7 @@ def analize_4_neigh(img, t1, t2, w, h, i, j):
         if 0 <= i + k[0] < w and 0 <= j + k[1] < h:
             n = img[i + k[0], j + k[1]]
             #Los pixels cuya magnitud de borde está entre t1 y t2 y están conectados con un borde, se marcan también como borde
-            if n >= t2:
+            if n == 255:
                 return 255
     return 0
 

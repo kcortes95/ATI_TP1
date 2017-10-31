@@ -88,7 +88,7 @@ class MyFirstGUI:
         border_menu.add_command(label="Laplace - Gauss",
                                 command=lambda: self.text_box(border.laplace_gauss, "Sigma", 'Laplace - Gauss'))
         border_menu.add_separator()
-        border_menu.add_command(label="Hough", command=lambda: self.apply_method(border.hough, self))
+        border_menu.add_command(label="Hough", command=lambda: self.double_text_box(border.hough, "a", "b", "Hough",self))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
@@ -205,20 +205,27 @@ class MyFirstGUI:
         self.cancel.config(command=self.cancel_gui)
         self.label_frame.config(text=name)
 
-    def double_text_box(self, callback, text1, text2, name="Operation"):
+    def double_text_box(self, callback, text1, text2, name="Operation", param1 = None):
         def save():
-            self.forget()
             if self.entries[0].get() != "" and self.entries[1].get() != "":
-                self.load_on_canvas(callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get())))
+                if param1 is None:
+                    self.load_on_canvas(callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get())))
+                elif param1 == self:
+                    callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get()), param1)
+
+            self.forget()
 
         def apply():
-            self.true_image = Image.fromarray(
-                callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get())))
-            self.canvas[0].image = ImageTk.PhotoImage(self.true_image)
-            self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
+            if param1 is None:
+                self.true_image = Image.fromarray(
+                    callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get())))
+                self.canvas[0].image = ImageTk.PhotoImage(self.true_image)
+                self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
+            elif param1 == self:
+                    callback(np.array(self.saved_image), int(self.entries[0].get()), int(self.entries[1].get()), param1)
 
         self.cancel_gui()
-        self.saved_image = self.true_image
+        self.saved_image = self.canvas[0].true_image
         self.set_label(text1, 0)
         self.set_label(text2, 1)
         self.apply.grid(row=2, column=1)
