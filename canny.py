@@ -107,21 +107,14 @@ def canny_function(matrix):
 def supr_no_max(matrix_directions, matrix_original):
     h, w = matrix_original.shape #buscar
 
-    for i in range(1, h-1):  # Asi saco los bordes sin el if
+    for i in range(1, h-1):
         for j in range(1, w-1):
             ad = tuple(np.add((i, j), matrix_directions[i, j]))
             sb = tuple(np.subtract((i, j), matrix_directions[i, j]))
-            if (matrix_original[i, j] <= matrix_original[ad]
-                    or matrix_original[i, j] <= matrix_original[sb]):
+            if (matrix_original[i, j] <= matrix_original[ad] or matrix_original[i, j] <= matrix_original[sb]):
                 matrix_original[i, j] = 0
 
     return matrix_original
-
-
-def get_value(matrix_original, phi, i, j, w, h):
-    angle = get_area(phi)
-    return get_val_from_neigh(matrix_original, get_neigh(angle), i, j, w, h)
-
 
 def get_area(phi):
     if phi < 0 or phi > np.pi:
@@ -136,50 +129,8 @@ def get_area(phi):
     else:
         return -1, -1
 
-
-def get_neigh(angle):
-    neighbours = np.zeros((2,2))
-    if angle == 0:
-        neighbours[0] = [-1,0]
-        neighbours[1] = [1,0]
-    if angle == 45:
-        neighbours[0] = [1,-1]
-        neighbours[1] = [-1,1]
-    if angle == 90:
-        neighbours[0] = [0,-1]
-        neighbours[1] = [0,1]
-    if angle == 135:
-        neighbours[0] = [-1,-1]
-        neighbours[1] = [1,1]
-
-    return neighbours
-
-
-def get_val_from_neigh(matrix_original, neighbours, i, j, w, h):
-    val = np.zeros(2)
-    me = matrix_original[i,j]
-
-    if( (i + int(neighbours[0][0])) >= 0 and (i + int(neighbours[0][0])) < w and (j + int(neighbours[0][1])) >= 0 and (j + int(neighbours[0][1])) < h):
-        val[0] = matrix_original[ i + int(neighbours[0][0]) , j + int(neighbours[0][1]) ]
-    else:
-        val[0] = 0
-
-    if( (i + int(neighbours[1][0])) >= 0 and (i + int(neighbours[1][0])) < w and (j + int(neighbours[1][1])) >= 0 and (j + int(neighbours[1][1])) < h):
-        val[1] = matrix_original[ i + int(neighbours[1][0]) , j + int(neighbours[1][1]) ]
-    else:
-        val[1] = 0
-
-    if( val[0] >= me or val[1] >= me ):
-        return 0 #no soy borde
-    else:
-        return me
-
-
 def umbral_histeresis(img, std):
     h, w = img.shape
-    #La idea es hacerlo con Otsu, pero tambien tengo anotado que lo podemos hacer con un slider!!
-    #lo dejo hardcodeado porque no se como es tu implementación, Lucas...
-    #el umbral segun otzu es 101
     me = th.otsu_threshold(img)
     print(std)
     t1 = me - std/2
@@ -204,8 +155,7 @@ def analize_4_neigh(img, t1, t2, w, h, i, j):
     for k in vec:
         if 0 <= i + k[0] < w and 0 <= j + k[1] < h:
             n = img[i + k[0], j + k[1]]
-            #Los pixels cuya magnitud de borde está entre t1 y t2 y están conectados con un borde, se marcan también como borde
-            if n == 255:
+            if n >= t2:
                 return 255
     return 0
 
