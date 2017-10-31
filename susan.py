@@ -14,7 +14,7 @@ def susan_function(matrix):
 
     circular_mask = [[0, 0, 1, 1, 1, 0, 0], [0, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 0, 0]]
 
-    img_aux = apply_mesh(img_arr, circular_mask, 7, 27)
+    return apply_mesh(img_arr, circular_mask, 7, 27)
 
 
 def apply_mesh(matrix, mesh, size, threshold):
@@ -26,7 +26,7 @@ def apply_mesh(matrix, mesh, size, threshold):
             out[:, :, i] = apply_mesh_one_dimension(matrix[:, :, i], mesh, size)
         return actions.linear_transform(out).astype(np.uint8)
     else:
-        return actions.linear_transform(apply_mesh_one_dimension(matrix,mesh,size, threshold)).astype(np.uint8)
+        return actions.linear_transform(apply_mesh_one_dimension(matrix, mesh, size, threshold)).astype(np.uint8)
 
 def apply_mesh_one_dimension(matrix, mesh, size, threshold):
 
@@ -38,7 +38,7 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
     for i in range(shape[0]):
         for j in range(shape[1]):
             if i >= shape[0] - radius or i < radius or j < radius or j >= shape[1] - radius:
-                out[i, j] = matrix[i, j]
+                out[i, j] = 0
             else:
                 out[i][j] = calculate(matrix, mesh, i, j, width, height, threshold)
 
@@ -47,24 +47,22 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
 
 def calculate(matrix, mesh, i, j, width, height, threshold):
     sum = 0
-    central_pixel = matrix[i][j]
+    central_pixel = int(matrix[i][j])
 
-    for k in range(-3,4):
-        for l in range(-3,4):
+    for k in range(-3, 4):
+        for l in range(-3, 4):
             posx = i + k
             posy = j + l
-
-            if (posx >= 0 or posx < width or posy >= 0 or posy < height):
-                if(matrix[posx][posy] * mesh[k + 3][l + 3] != 0):
-                    if( math.fabs(matrix[posx][posy] - central_pixel) < threshold ):
+            if mesh[k + 3][l + 3] != 0:
+                if math.fabs(matrix[posx][posy] - central_pixel) < threshold:
                         sum += 1
 
-    tot = 1 - sum/49 #49 total en la máscara (CREO)
+    tot = 1 - sum/37  #37 total en la máscara (CREO)
 
-    if( math.fabs(tot - 0.5) < 0.1 ):
+    if math.fabs(tot - 0.5) < 0.1:
         return 255
 
-    if( math.fabs(tot - 0.75) < 0.1 ):
-        return 255
+    # if( math.fabs(tot - 0.75) < 0.1 ):
+        # return 255
 
     return 0

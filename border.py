@@ -126,7 +126,7 @@ def hough(matrix, a, b, self):
 
 
 def get_tops(acumulator, m):
-    thres = m*0.8
+    thres = m*0.5
     res = []
     for a in range(acumulator.shape[0]):
         for b in range(acumulator.shape[1]):
