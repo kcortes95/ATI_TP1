@@ -114,8 +114,6 @@ class MyFirstGUI:
         filemenu = Menu(menubar, tearoff=0)
         filemenu.add_command(label="Canny", command=lambda: self.apply_method(canny.canny_function))
         filemenu.add_command(label="Susan All", command=lambda: self.apply_method(susan.susan_function))
-        filemenu.add_command(label="Susan Border", command=lambda: self.apply_method(susan.susan_function_borde))
-        filemenu.add_command(label="Susan Corner", command=lambda: self.apply_method(susan.susan_function_esquina))
         menubar.add_cascade(label="Detector", menu=filemenu)
 
         master.config(menu=menubar)
