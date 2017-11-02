@@ -14,7 +14,7 @@ def susan_function(matrix):
 
     circular_mask = [[0, 0, 1, 1, 1, 0, 0], [0, 1, 1, 1, 1, 1, 0], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1, 0], [0, 0, 1, 1, 1, 0, 0]]
 
-    return apply_mesh(img_arr, circular_mask, 7, 27, type)
+    return apply_mesh(img_arr, circular_mask, 7, 27)
 
 
 def apply_mesh(matrix, mesh, size, threshold):
@@ -41,8 +41,8 @@ def apply_mesh_one_dimension(matrix, mesh, size, threshold):
                 out[i, j] = [0, 0, 0]
             else:
                 value = calculate(matrix, mesh, i, j, width, height, threshold)
+                v = matrix[i][j]
                 if (value == 0):
-                    v = matrix[i][j]
                     out[i, j] = [v, v, v]
                 elif(value == 1):
                     out[i, j] = [255, 0, 0]
