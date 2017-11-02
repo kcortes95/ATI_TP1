@@ -10,6 +10,8 @@ import anistropic
 import thresholds
 import canny as canny
 import susan as susan
+import time
+
 
 
 class MyFirstGUI:
@@ -17,6 +19,7 @@ class MyFirstGUI:
         self.master = master
         master.minsize(width=640, height=480)
         master.title("Adove Fotoyop")
+
         self.next_canvas = 1
         self.image_matrix = []
         self.canvas = [Canvas(master, width=200, height=200, cursor="crosshair"),
@@ -27,11 +30,11 @@ class MyFirstGUI:
                        Canvas(master, width=200, height=200, cursor="crosshair")]
         self.saved_image = None
         self.true_image = None
-
         menubar = Menu(master)
 
         filemenu = Menu(menubar, tearoff=0)
         filemenu.add_command(label="Open", command=lambda: self.open(None,None))
+        filemenu.add_command(label="Open Video", command=lambda: self.open_video())
         filemenu.add_command(label="Save", command=lambda: self.save(None))
         filemenu.add_separator()
         filemenu.add_command(label="Exit", command=master.quit)
@@ -118,6 +121,11 @@ class MyFirstGUI:
         filemenu.add_command(label="Susan Corner", command=lambda: self.apply_method(susan.susan_function_esquina))
         menubar.add_cascade(label="Detector", menu=filemenu)
 
+        video_menu = Menu(menubar, tearoff=0)
+        video_menu.add_command(label="Contornos Activos", command=self.active_contours)
+        menubar.add_cascade(label="Video", menu=video_menu)
+
+
         master.config(menu=menubar)
         self.menubar = menubar
 
@@ -177,6 +185,35 @@ class MyFirstGUI:
         self.canvas[0].create_image((0, 0), anchor="nw", image=photo)
         self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0))
         self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e,0))
+
+        for i in range(len(self.canvas)):
+            self.canvas[i].rect = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
+
+    def open_video(self):
+        filename = filedialog.askopenfilename(parent=root)
+        self.video = []
+        i = 1
+        name = filename.rsplit(".", 1)
+
+        try:
+            while True:
+                print(name[0][:(len(name[0])-1)] + str(i) + "." + name[1])
+                self.video.append(Image.open(name[0][:(len(name[0])-1)] + str(i) + "." + name[1]))
+                i += 1
+        except FileNotFoundError:
+            print(i)
+            print(len(self.video))
+
+        self.canvas[0].image = ImageTk.PhotoImage(self.video[0])
+        self.canvas[0].true_image = self.video[0]
+        self.true_image = self.video[0]
+        self.image_matrix = []
+        self.image_matrix.append(np.array(self.video[0]))
+        width, height = self.video[0].size
+        self.canvas[0].configure(width=width, height=height)
+        self.image_on_canvas = self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
+        self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0))
+        self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e, 0))
 
         for i in range(len(self.canvas)):
             self.canvas[i].rect = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
@@ -300,6 +337,15 @@ class MyFirstGUI:
             method(np.array(self.canvas[0].true_image), param)
         else:
             self.load_on_canvas(method(np.array(self.canvas[0].true_image), param))
+
+    def active_contours(self):
+        avg = actions.get_area_info(self, np.array(self.canvas[0].true_image))
+        print(avg)
+        for i in range(len(self.video)):
+            print("d")
+            self.canvas[0].image = ImageTk.PhotoImage(self.video[i])
+            self.canvas[0].itemconfig(self.image_on_canvas, image=self.canvas[0].image)
+            self.canvas[0].update()
 
     def cancel_gui(self):
         if self.saved_image is not None:

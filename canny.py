@@ -80,8 +80,8 @@ def canny_function(matrix):
     # mp = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]]); #Mascara de Prewit
 
     # directions es la matrix de direcciones
-    sobel_matrix = bd.sobel(img_arr)
-    sobel_gauss_matrix = bd.sobel(img_arr)
+    sobel_matrix = bd.sobel(img_gauss)
+    sobel_gauss_matrix = bd.sobel(img_gauss)
 
     directions = apply_double_mesh_one_dimension_atan(sobel_matrix, m) # Ahora mesh ya devuelve las direcciones
     directions_gauss = apply_double_mesh_one_dimension_atan(sobel_gauss_matrix, m)  # Ahora mesh ya devuelve las direcciones

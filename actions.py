@@ -74,7 +74,7 @@ def get_area_info(self, matrix):
     yfinish = self.y_start if self.y_start > self.y_finish else self.y_finish
     img = matrix
 
-    if isinstance(img[0, 0], tuple):
+    if isinstance(img[0, 0], np.ndarray):
         if len(img[0,0]) == 4:
             total = (0, 0, 0, 0)
         else:
@@ -84,13 +84,14 @@ def get_area_info(self, matrix):
             for i in range(ystart, yfinish):
                 total = tuple(map(lambda x, y: x + y, total, img[i, j]))
         print("Promedio:" + str(tuple([x/pixel_count for x in total])))
-
+        return tuple([x/pixel_count for x in total])
     else:
         total = 0
         for j in range(xstart, xfinish):
             for i in range(ystart, yfinish):
                 total += img[i, j]
         print("Promedio:" + str(total/pixel_count))
+        return total/pixel_count
 
 def do_clear(self):
     self.canvas.delete("all")
