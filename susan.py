@@ -31,16 +31,24 @@ def apply_mesh(matrix, mesh, size, threshold):
 def apply_mesh_one_dimension(matrix, mesh, size, threshold):
 
     width, height = matrix.shape
-    out = np.zeros(matrix.shape, dtype=np.float32)
+    out = np.zeros((width, height, 3), dtype=np.float32)
     radius = int(size / 2)
     shape = matrix.shape
     print("radius: " + str(radius))
     for i in range(shape[0]):
         for j in range(shape[1]):
             if i >= shape[0] - radius or i < radius or j < radius or j >= shape[1] - radius:
-                out[i, j] = 0
+                out[i, j] = [0, 0, 0]
             else:
-                out[i][j] = calculate(matrix, mesh, i, j, width, height, threshold)
+                value = calculate(matrix, mesh, i, j, width, height, threshold)
+                if (value == 0):
+                    v = matrix[i][j]
+                    out[i, j] = [v, v, v]
+                elif(value == 1):
+                    out[i, j] = [255, 0, 0]
+                else:
+                    out[i, j] = [0, 255, 0]
+
 
     return out
 
@@ -60,9 +68,9 @@ def calculate(matrix, mesh, i, j, width, height, threshold):
     tot = 1 - sum/37  #37 total en la máscara (CREO)
 
     if math.fabs(tot - 0.5) < 0.1:
-        return 255
+        return 1
 
-    # if( math.fabs(tot - 0.75) < 0.1 ):
-        # return 255
+    if( math.fabs(tot - 0.75) < 0.1 ):
+        return 2
 
     return 0

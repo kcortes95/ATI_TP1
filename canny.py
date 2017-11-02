@@ -83,17 +83,17 @@ def canny_function(matrix):
 
     # 1 - aplicar GAUSS
 
-    img_gauss = mesh.gauss_filter(img_arr, 7, 1)
+    img_gauss = mesh.gauss_filter(img_arr, 7, 1) #podria ser 2 tambien
 
     m = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]) #Mascara de Sobel
     # mp = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]]); #Mascara de Prewit
 
     # directions es la matrix de direcciones
     sobel_matrix = bd.sobel(img_arr)
-    sobel_gauss_matrix = bd.sobel(img_gauss)
+    sobel_gauss_matrix = bd.sobel(img_arr)
 
     directions = apply_double_mesh_one_dimension_atan(img_arr, m) # Ahora mesh ya devuelve las direcciones
-    directions_gauss = apply_double_mesh_one_dimension_atan(img_gauss, m)  # Ahora mesh ya devuelve las direcciones
+    directions_gauss = apply_double_mesh_one_dimension_atan(img_arr, m)  # Ahora mesh ya devuelve las direcciones
 
     img_2 = supr_no_max(directions, sobel_matrix)
     img_2_gauss = supr_no_max(directions_gauss, sobel_gauss_matrix)
