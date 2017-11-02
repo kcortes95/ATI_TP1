@@ -90,7 +90,7 @@ def laplace_gauss(matrix, std):
 
 
 def hough(matrix, a, b, self):
-    aux = prewit(matrix)
+    aux = sobel(matrix)
     aux = thresholds.threshold(aux, 128)
     D = max(aux.shape)
     p_range = 2 * math.sqrt(2) * D
@@ -126,7 +126,7 @@ def hough(matrix, a, b, self):
 
 
 def get_tops(acumulator, m):
-    thres = m*0.5
+    thres = m*0.7
     res = []
     for a in range(acumulator.shape[0]):
         for b in range(acumulator.shape[1]):

@@ -72,15 +72,6 @@ Fin de funciones auxiliares
 def canny_function(matrix):
     img_arr = matrix
 
-    depth = 1
-    if len(matrix.shape) == 3:
-        depth = 3
-
-    # Deshardcodear esto!
-    percentage = 25
-    mu = 10
-    sigma = 0
-
     # 1 - aplicar GAUSS
 
     img_gauss = mesh.gauss_filter(img_arr, 7, 1) #podria ser 2 tambien
@@ -98,8 +89,8 @@ def canny_function(matrix):
     img_2 = supr_no_max(directions, sobel_matrix)
     img_2_gauss = supr_no_max(directions_gauss, sobel_gauss_matrix)
 
-    final = umbral_histeresis(img_2, np.std(sobel_matrix))
-    final_gauss = umbral_histeresis(img_2_gauss, np.std(sobel_gauss_matrix))
+    final = umbral_histeresis(img_2, np.std(img_2))
+    final_gauss = umbral_histeresis(img_2_gauss, np.std(img_2_gauss))
 
     return np.minimum(final, final_gauss, dtype=np.uint8)
 
@@ -111,7 +102,7 @@ def supr_no_max(matrix_directions, matrix_original):
         for j in range(1, w-1):
             ad = tuple(np.add((i, j), matrix_directions[i, j]))
             sb = tuple(np.subtract((i, j), matrix_directions[i, j]))
-            if (matrix_original[i, j] <= matrix_original[ad] or matrix_original[i, j] <= matrix_original[sb]):
+            if matrix_original[i, j] <= matrix_original[ad] or matrix_original[i, j] <= matrix_original[sb]:
                 matrix_original[i, j] = 0
 
     return matrix_original
@@ -136,7 +127,7 @@ def umbral_histeresis(img, std):
     t1 = me - std/2
     t2 = me + std/2
 
-    to_ret = np.zeros((w, h), dtype=np.uint8)
+    to_ret = np.zeros(img.shape, dtype=np.uint8)
 
     for i in range(img.shape[0]):
         for j in range(img.shape[1]):
@@ -145,7 +136,7 @@ def umbral_histeresis(img, std):
             elif img[i, j] < t1:
                 to_ret[i, j] = 0
             else:
-                to_ret[i, j] = analize_4_neigh(img, t1, t2, w, h, i, j)
+                to_ret[i, j] = analize_4_neigh(img, t1, t2, img.shape[0], img.shape[1], i, j)
 
     return to_ret
 
@@ -172,7 +163,9 @@ def apply_double_mesh_one_dimension_atan(matrix, mesh):
             else:
                 dx = int(np.sum(mesh * matrix[i - radius:i + radius + 1, j - radius:j + radius + 1]))
                 dy = int(np.sum(mesh_trans * matrix[i - radius:i + radius + 1, j - radius:j + radius + 1]))
-                if dx == 0:
+                if dx == 0 and dy == 0:
+                    out[i, j] = 0, 0
+                elif dx == 0:
                     out[i, j] = 0, 1
                 else:
                     out[i, j] = get_area(np.arctan(dy/dx) + (np.pi / 2))
