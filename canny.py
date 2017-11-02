@@ -92,8 +92,8 @@ def canny_function(matrix):
     sobel_matrix = bd.sobel(img_arr)
     sobel_gauss_matrix = bd.sobel(img_arr)
 
-    directions = apply_double_mesh_one_dimension_atan(img_arr, m) # Ahora mesh ya devuelve las direcciones
-    directions_gauss = apply_double_mesh_one_dimension_atan(img_arr, m)  # Ahora mesh ya devuelve las direcciones
+    directions = apply_double_mesh_one_dimension_atan(sobel_matrix, m) # Ahora mesh ya devuelve las direcciones
+    directions_gauss = apply_double_mesh_one_dimension_atan(sobel_gauss_matrix, m)  # Ahora mesh ya devuelve las direcciones
 
     img_2 = supr_no_max(directions, sobel_matrix)
     img_2_gauss = supr_no_max(directions_gauss, sobel_gauss_matrix)
