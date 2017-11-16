@@ -11,6 +11,7 @@ import thresholds
 import canny as canny
 import susan as susan
 import time
+import video
 
 
 
@@ -19,6 +20,8 @@ class MyFirstGUI:
         self.master = master
         master.minsize(width=640, height=480)
         master.title("Adove Fotoyop")
+        self.release = True
+        self.release2 = True
 
         self.next_canvas = 1
         self.image_matrix = []
@@ -181,11 +184,14 @@ class MyFirstGUI:
         width, height = image.size
         self.canvas[0].configure(width=width, height=height)
         self.canvas[0].create_image((0, 0), anchor="nw", image=photo)
-        self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0))
-        self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e,0))
+        self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0, True))
+        self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e,0, True))
+        self.canvas[0].bind("<B2-Motion>", lambda e: self.set_area(e, 0, False))
+        self.canvas[0].bind("<ButtonRelease-2>", lambda e: self.release_left(e, 0, False))
 
         for i in range(len(self.canvas)):
             self.canvas[i].rect = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
+            self.canvas[i].rect2 = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#0000ff')
 
     def open_video(self):
         filename = filedialog.askopenfilename(parent=root)
@@ -210,11 +216,14 @@ class MyFirstGUI:
         width, height = self.video[0].size
         self.canvas[0].configure(width=width, height=height)
         self.image_on_canvas = self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
-        self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0))
-        self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e, 0))
+        self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0, True))
+        self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e, 0, True))
+        self.canvas[0].bind("<B2-Motion>", lambda e: self.set_area(e, 0, False))
+        self.canvas[0].bind("<ButtonRelease-2>", lambda e: self.release_left(e, 0, False))
 
         for i in range(len(self.canvas)):
-            self.canvas[i].rect = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#ff0000')
+            self.canvas[i].rect = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#ffff00')
+            self.canvas[i].rect2 = self.canvas[i].create_rectangle(-1, -1, -1, -1, fill='', outline='#0000ff')
 
     def save(self, event):
         filename = filedialog.asksaveasfilename(parent=root)
@@ -337,13 +346,28 @@ class MyFirstGUI:
             self.load_on_canvas(method(np.array(self.canvas[0].true_image), param))
 
     def active_contours(self):
-        avg = actions.get_area_info(self, np.array(self.canvas[0].true_image))
-        print(avg)
+        # avg = actions.get_area_info(self, np.array(self.canvas[0].true_image))
+        matrixes = []
         for i in range(len(self.video)):
-            print("d")
-            self.canvas[0].image = ImageTk.PhotoImage(self.video[i])
-            self.canvas[0].itemconfig(self.image_on_canvas, image=self.canvas[0].image)
-            self.canvas[0].update()
+            matrixes.append(np.array(self.video[i], dtype=np.uint8))
+
+        phi, lin, lout, theta0, theta1 = video.pixel_exchange_border_detect(matrixes[0],
+                                                                            (self.x_start, self.x_finish, self.y_start, self.y_finish),
+                                                                            (self.x2_start, self.x2_finish, self.y2_start, self.y2_finish))
+
+        self.paint_pixels(matrixes[0], lout)
+        for i in range(1, len(self.video)):
+            phi, lin, lout, theta0, theta1 = video.apply_pixel_exchange(matrixes[i], phi, lin, lout, theta0, theta1)
+            self.paint_pixels(matrixes[i], lout)
+
+    def paint_pixels(self, matrix, pixels):
+        for i in pixels:
+            matrix[i[0], i[1]] = np.asarray((0, 0, 255))
+        self.canvas[0].ti = Image.fromarray(matrix)
+        self.canvas[0].i = ImageTk.PhotoImage(self.canvas[0].ti)
+        self.canvas[0].itemconfig(self.image_on_canvas, image=self.canvas[0].i)
+        self.canvas[0].update()
+
 
     def cancel_gui(self):
         if self.saved_image is not None:
@@ -389,26 +413,47 @@ class MyFirstGUI:
         self.canvas[self.next_canvas].bind("<ButtonRelease-1>", lambda e: self.release_left(e,index))
         self.next_canvas += 1
 
-    def set_area(self, event, index):
-        if self.release:
-            self.x_start = event.x
-            self.x_finish = event.x
+    def set_area(self, event, index, left):
+        if(left):
+            if self.release:
+                self.x_start = event.x
+                self.x_finish = event.x
+            else:
+                self.x_finish = event.x
+
+            if self.release:
+                self.y_start = event.y
+                self.y_finish = event.y
+                self.release = False
+            else:
+                self.y_finish = event.y
+
+            self.canvas[index].coords(self.canvas[index].rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
+            self.canvas[index].tag_raise(self.canvas[index].rect)
         else:
-            self.x_finish = event.x
+            if self.release2:
+                self.x2_start = event.x
+                self.x2_finish = event.x
+            else:
+                self.x2_finish = event.x
 
-        if self.release:
-            self.y_start = event.y
-            self.y_finish = event.y
-            self.release = False
+            if self.release2:
+                self.y2_start = event.y
+                self.y2_finish = event.y
+                self.release2 = False
+            else:
+                self.y2_finish = event.y
+
+            self.canvas[index].coords(self.canvas[index].rect2, self.x2_start, self.y2_start, self.x2_finish, self.y2_finish)
+            self.canvas[index].tag_raise(self.canvas[index].rect2)
+
+    def release_left(self,event,index, left):
+        if left:
+            self.release = True
+            actions.get_area_info(self, np.array(self.canvas[index].true_image),left)
         else:
-            self.y_finish = event.y
-
-        self.canvas[index].coords(self.canvas[index].rect, self.x_start, self.y_start, self.x_finish, self.y_finish)
-        self.canvas[index].tag_raise(self.canvas[index].rect)
-
-    def release_left(self,event,index):
-        self.release = True
-        actions.get_area_info(self, np.array(self.canvas[index].true_image))
+            self.release2 = True
+            actions.get_area_info(self, np.array(self.canvas[index].true_image),left)
 root = Tk()
 my_gui = MyFirstGUI(root)
 

@@ -65,13 +65,21 @@ def save_cropped(self, master):
     self.new_window.canvas.true_cropped.save(filename)
     print(filename)
 
-def get_area_info(self, matrix):
-    pixel_count = abs(self.x_start - self.x_finish) * abs(self.y_start - self.y_finish)
-    print("Cantidad de pixeles:" + str(pixel_count))
-    xstart = self.x_start if self.x_start < self.x_finish else self.x_finish
-    ystart = self.y_start if self.y_start < self.y_finish else self.y_finish
-    xfinish = self.x_start if self.x_start > self.x_finish else self.x_finish
-    yfinish = self.y_start if self.y_start > self.y_finish else self.y_finish
+def get_area_info(self, matrix,left):
+    if left :
+        pixel_count = abs(self.x_start - self.x_finish) * abs(self.y_start - self.y_finish)
+        print("Cantidad de pixeles:" + str(pixel_count))
+        xstart = self.x_start if self.x_start < self.x_finish else self.x_finish
+        ystart = self.y_start if self.y_start < self.y_finish else self.y_finish
+        xfinish = self.x_start if self.x_start > self.x_finish else self.x_finish
+        yfinish = self.y_start if self.y_start > self.y_finish else self.y_finish
+    else:
+        pixel_count = abs(self.x2_start - self.x2_finish) * abs(self.y2_start - self.y2_finish)
+        print("Cantidad de pixeles:" + str(pixel_count))
+        xstart = self.x2_start if self.x2_start < self.x2_finish else self.x2_finish
+        ystart = self.y2_start if self.y2_start < self.y2_finish else self.y2_finish
+        xfinish = self.x2_start if self.x2_start > self.x2_finish else self.x2_finish
+        yfinish = self.y2_start if self.y2_start > self.y2_finish else self.y2_finish
     img = matrix
 
     if isinstance(img[0, 0], np.ndarray):
