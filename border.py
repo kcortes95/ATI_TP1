@@ -1,19 +1,19 @@
 import meshoperations as mesh
 import numpy as np
+import scipy as sp
 import math
 import actions
 import thresholds
 from scipy import signal
 
-
+sobel_matrix = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
 def prewit(matrix):
     m = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]])
     return mesh.apply_double_mesh(matrix, m)
 
 
 def sobel(matrix):
-    m = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
-    return mesh.apply_double_mesh(matrix, m)
+    return mesh.apply_double_mesh(matrix, sobel_matrix)
 
 
 def multi_prewit(matrix):
@@ -132,4 +132,36 @@ def get_tops(acumulator, m):
         for b in range(acumulator.shape[1]):
             if acumulator[a, b] > thres:
                 res.append((a, b))
+    return res
+
+
+def harrys(matrix, threshold):
+    print(matrix)
+    print(sobel_matrix)
+    dx = sp.signal.convolve2d(matrix, sobel_matrix, boundary='symm', mode='same')
+    dy = sp.signal.convolve2d(matrix, np.transpose(sobel_matrix), boundary='symm', mode='same')
+    gm = mesh.gauss_mesh(5, 1)
+    dx2 = sp.signal.convolve2d(np.power(dx, 2), gm, boundary='symm', mode='same')
+    dy2 = sp.signal.convolve2d(np.power(dy, 2), gm, boundary='symm', mode='same')
+    lxy = sp.signal.convolve2d(np.multiply(dx, dy), gm, boundary='symm', mode='same')
+    k = 0.04
+    res = (np.multiply(dx2, dy2) - np.power(lxy, 2)) - k*np.power(np.add(dx2, dy2), 2)
+    print(res)
+    res = actions.linear_transform(res)
+    print(res)
+    return combine(matrix,thresholds.threshold(res, threshold))
+
+
+def combine(original, modified):
+    shape = original.shape
+    res = np.zeros((shape[0], shape[1], 3), dtype=np.uint8)
+    res[:, :, 0] = original
+    res[:, :, 1] = original
+    res[:, :, 2] = original
+    for i in range(modified.shape[0]):
+        for j in range(modified.shape[1]):
+            if modified[i, j] == 255:
+                res[i, j, 0] = 255
+                res[i, j, 1] = 0
+                res[i, j, 2] = 0
     return res

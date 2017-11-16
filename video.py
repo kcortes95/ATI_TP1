@@ -10,7 +10,7 @@ def pixel_exchange_border_detect(mat, coords, outer_coords):
 
 
 def apply_pixel_exchange(mat, phi, lin, lout, theta0, theta1):
-    print('when starting ' + str(len(lout)))
+    print('lout size: ' + str(len(lout)))
     starting = int(time.time() * 1000)
     F = getF(mat, theta0, theta1)
     change = True

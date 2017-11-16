@@ -118,16 +118,18 @@ def apply_median_one_dimension(matrix,size):
 
 
 def gauss_filter(matrix, size, std):
-    mesh = np.zeros((size, size))
-    radius = int(size/2)
-    cst = 1 / (2*math.pi*std*std)
-    for i in range(-radius,radius+1):
-        for j in range(-radius, radius+1):
-            mesh[i+radius, j+radius] = cst*math.exp(-(j*j + i*i)/(2*std*std))
-    print(np.sum(mesh))
-    ma = apply_mesh(matrix, mesh, size)
+    ma = apply_mesh(matrix, gauss_mesh(size, std), size)
     return ma
 
+def gauss_mesh(size, std):
+    mesh = np.zeros((size, size))
+    radius = int(size / 2)
+    cst = 1 / (2 * math.pi * std * std)
+    for i in range(-radius, radius + 1):
+        for j in range(-radius, radius + 1):
+            mesh[i + radius, j + radius] = cst * math.exp(-(j * j + i * i) / (2 * std * std))
+    print(np.sum(mesh))
+    return mesh
 
 def highpass_filter(matrix,size):
     mesh = np.full((size,size), -1/(size*size), dtype=np.float32)

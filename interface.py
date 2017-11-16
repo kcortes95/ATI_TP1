@@ -96,6 +96,8 @@ class MyFirstGUI:
                                 command=lambda: self.text_box(border.laplace_gauss, "Sigma", 'Laplace - Gauss'))
         border_menu.add_separator()
         border_menu.add_command(label="Hough", command=lambda: self.double_text_box(border.hough, "a", "b", "Hough",self))
+        border_menu.add_separator()
+        border_menu.add_command(label="Harris", command=lambda: self.slider("Threshold", border.harrys, "Harris"))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
@@ -347,7 +349,11 @@ class MyFirstGUI:
 
     def active_contours(self):
         # avg = actions.get_area_info(self, np.array(self.canvas[0].true_image))
+        self.canvas[0].coords(self.canvas[0].rect, -1, -1, -1, -1)
+        self.canvas[0].coords(self.canvas[0].rect2, -1, -1, -1, -1)
+
         matrixes = []
+        self.canvas[0].rect
         for i in range(len(self.video)):
             matrixes.append(np.array(self.video[i], dtype=np.uint8))
 
@@ -362,7 +368,7 @@ class MyFirstGUI:
 
     def paint_pixels(self, matrix, pixels):
         for i in pixels:
-            matrix[i[0], i[1]] = np.asarray((0, 0, 255))
+            matrix[i[0], i[1]] = (0, 0, 255)
         self.canvas[0].ti = Image.fromarray(matrix)
         self.canvas[0].i = ImageTk.PhotoImage(self.canvas[0].ti)
         self.canvas[0].itemconfig(self.image_on_canvas, image=self.canvas[0].i)
