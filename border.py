@@ -135,7 +135,7 @@ def get_tops(acumulator, m):
     return res
 
 
-def harrys(matrix, threshold):
+def harris(matrix, threshold):
     print(matrix)
     print(sobel_matrix)
     dx = sp.signal.convolve2d(matrix, sobel_matrix, boundary='symm', mode='same')
@@ -149,7 +149,7 @@ def harrys(matrix, threshold):
     print(res)
     res = actions.linear_transform(res)
     print(res)
-    return combine(matrix,thresholds.threshold(res, threshold))
+    return combine(matrix, thresholds.threshold(res, threshold))
 
 
 def combine(original, modified):

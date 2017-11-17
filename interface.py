@@ -97,7 +97,7 @@ class MyFirstGUI:
         border_menu.add_separator()
         border_menu.add_command(label="Hough", command=lambda: self.double_text_box(border.hough, "a", "b", "Hough",self))
         border_menu.add_separator()
-        border_menu.add_command(label="Harris", command=lambda: self.slider("Threshold", border.harrys, "Harris"))
+        border_menu.add_command(label="Harris", command=lambda: self.slider("Threshold", border.harris, "Harris"))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
@@ -313,7 +313,7 @@ class MyFirstGUI:
 
     def double_slider(self, text1, text2, callback, name="Operation"):
         def save():
-            self.load_on_canvas(np.asarray(self.canvas[0].true_image))
+            self.load_on_canvas(np.asarray(self.true_image))
             self.forget()
 
         def apply(event):
@@ -323,7 +323,7 @@ class MyFirstGUI:
             self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
 
         self.cancel_gui()
-        self.saved_image = self.true_image
+        self.saved_image = self.canvas[0].true_image
         self.set_slider(0, text1, apply)
         self.set_slider(1, text2, apply)
         self.accept.grid(row=2, column=0)
