@@ -293,7 +293,7 @@ class MyFirstGUI:
 
     def slider(self, text, callback, name="Operation"):
         def save():
-            self.load_on_canvas(np.asarray(self.canvas[0].true_image))
+            self.load_on_canvas(np.asarray(self.true_image))
             self.forget()
 
         def apply(event):
@@ -303,7 +303,7 @@ class MyFirstGUI:
             self.canvas[0].create_image((0, 0), anchor="nw", image=self.canvas[0].image)
 
         self.cancel_gui()
-        self.saved_image = self.true_image
+        self.saved_image = self.canvas[0].true_image
         self.set_slider(0, text, apply)
         self.accept.grid(row=2, column=0)
         self.cancel.grid(row=2, column=1)
