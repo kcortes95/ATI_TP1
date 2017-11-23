@@ -146,9 +146,7 @@ def harris(matrix, threshold):
     lxy = sp.signal.convolve2d(np.multiply(dx, dy), gm, boundary='symm', mode='same')
     k = 0.04
     res = (np.multiply(dx2, dy2) - np.power(lxy, 2)) - k*np.power(np.add(dx2, dy2), 2)
-    print(res)
     res = actions.linear_transform(res)
-    print(res)
     return combine(matrix, thresholds.threshold(res, threshold))
 
 

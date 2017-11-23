@@ -12,7 +12,7 @@ import canny as canny
 import susan as susan
 import time
 import video
-
+from timeit import default_timer as timer
 
 
 class MyFirstGUI:
@@ -96,6 +96,7 @@ class MyFirstGUI:
                                 command=lambda: self.text_box(border.laplace_gauss, "Sigma", 'Laplace - Gauss'))
         border_menu.add_separator()
         border_menu.add_command(label="Hough", command=lambda: self.double_text_box(border.hough, "a", "b", "Hough",self))
+        border_menu.add_command(label="Contornos Activos", command=self.single_active_contours)
         border_menu.add_separator()
         border_menu.add_command(label="Harris", command=lambda: self.slider("Threshold", border.harris, "Harris"))
         menubar.add_cascade(menu=border_menu, label="Border")
@@ -185,7 +186,7 @@ class MyFirstGUI:
         self.image_matrix.append(np.array(image))
         width, height = image.size
         self.canvas[0].configure(width=width, height=height)
-        self.canvas[0].create_image((0, 0), anchor="nw", image=photo)
+        self.image_on_canvas = self.canvas[0].create_image((0, 0), anchor="nw", image=photo)
         self.canvas[0].bind("<B1-Motion>", lambda e: self.set_area(e, 0, True))
         self.canvas[0].bind("<ButtonRelease-1>", lambda e: self.release_left(e,0, True))
         self.canvas[0].bind("<B2-Motion>", lambda e: self.set_area(e, 0, False))
@@ -351,20 +352,39 @@ class MyFirstGUI:
         # avg = actions.get_area_info(self, np.array(self.canvas[0].true_image))
         self.canvas[0].coords(self.canvas[0].rect, -1, -1, -1, -1)
         self.canvas[0].coords(self.canvas[0].rect2, -1, -1, -1, -1)
-
         matrixes = []
         self.canvas[0].rect
         for i in range(len(self.video)):
             matrixes.append(np.array(self.video[i], dtype=np.uint8))
 
+        start = timer()
         phi, lin, lout, theta0, theta1 = video.pixel_exchange_border_detect(matrixes[0],
                                                                             (self.x_start, self.x_finish, self.y_start, self.y_finish),
                                                                             (self.x2_start, self.x2_finish, self.y2_start, self.y2_finish))
-
+        end = timer()
+        print("First time: " + str(end - start))
         self.paint_pixels(matrixes[0], lout)
+        start = timer()
         for i in range(1, len(self.video)):
+
             phi, lin, lout, theta0, theta1 = video.apply_pixel_exchange(matrixes[i], phi, lin, lout, theta0, theta1)
             self.paint_pixels(matrixes[i], lout)
+        end = timer()
+        print("Others: " + str(end - start))
+
+    def single_active_contours(self):
+        self.canvas[0].coords(self.canvas[0].rect, -1, -1, -1, -1)
+        self.canvas[0].coords(self.canvas[0].rect2, -1, -1, -1, -1)
+
+        start = timer()
+        phi, lin, lout, theta0, theta1 = video.pixel_exchange_border_detect(np.array(self.canvas[0].true_image),
+                                                                            (self.x_start, self.x_finish, self.y_start,
+                                                                             self.y_finish),
+                                                                            (self.x2_start, self.x2_finish,
+                                                                             self.y2_start, self.y2_finish))
+        end = timer()
+        print(end - start)
+        self.paint_pixels(np.array(self.canvas[0].true_image), lout)
 
     def paint_pixels(self, matrix, pixels):
         for i in pixels:

@@ -1,8 +1,10 @@
 import numpy as np
 import math
 import time
+from numba import jit
 
 directions = [[1, 0], [1, 1], [1, -1], [0, 1], [0, -1], [-1, 0], [-1, 1], [-1, 1]]
+
 
 def pixel_exchange_border_detect(mat, coords, outer_coords):
     phi, lin, lout, theta0, theta1 = classify(mat, coords, outer_coords)
@@ -10,8 +12,6 @@ def pixel_exchange_border_detect(mat, coords, outer_coords):
 
 
 def apply_pixel_exchange(mat, phi, lin, lout, theta0, theta1):
-    print('lout size: ' + str(len(lout)))
-    starting = int(time.time() * 1000)
     F = getF(mat, theta0, theta1)
     change = True
 
@@ -19,35 +19,49 @@ def apply_pixel_exchange(mat, phi, lin, lout, theta0, theta1):
     while change:
         new_lout = []
         new_lin = []
-        change = False
-        for j in range(len(lout)):
-            if F[lout[j][0], lout[j][1]] > 0:
-                lin.append(lout[j])
-                phi[lout[j][0], lout[j][1]] = -1
-                checkNeighbours(phi, new_lout, lout[j], 3, 1)
-                change = True
-            else:
-                new_lout.append(lout[j])
+        change = calculate_lout(phi, F, lout, lin, new_lin, new_lout)
 
-        removeExtra(phi, new_lin, -1, -3)
-
-        for j in range(len(lin)):
-            if F[lin[j][0], lin[j][1]] < 0:
-                new_lout.append(lin[j])
-                phi[lin[j][0], lin[j][1]] = 1
-                checkNeighbours(phi, new_lin, lin[j], -3, -1)
-                change = True
-            else:
-                new_lin.append(lin[j])
-
-        removeExtra(phi, new_lout, 1, 3)
+        change = calculate_lin(phi, F, lin, new_lin, new_lout) or change
         i += 1
         lin = new_lin
         lout = new_lout
-    print("Done. Number of iterations: " + str(i) + " Time elapsed:" + str(int(time.time() * 1000) - starting))
+
     return phi, new_lin, new_lout, theta0, theta1
 
 
+@jit(cache=True)
+def calculate_lin(phi, F, lin, new_lin, new_lout):
+    change = False
+    for j in range(len(lin)):
+        if F[lin[j][0], lin[j][1]] < 0:
+            new_lout.append(lin[j])
+            phi[lin[j][0], lin[j][1]] = 1
+            checkNeighbours(phi, new_lin, lin[j], -3, -1)
+            change = True
+        else:
+            new_lin.append(lin[j])
+    if len(new_lout) > 0:
+        removeExtra(phi, new_lout, 1, 3)
+    return change
+
+
+@jit(cache=True)
+def calculate_lout(phi, F, lout, lin,  new_lin, new_lout):
+    change = False
+    for j in range(len(lout)):
+        if F[lout[j][0], lout[j][1]] > 0:
+            lin.append(lout[j])
+            phi[lout[j][0], lout[j][1]] = -1
+            checkNeighbours(phi, new_lout, lout[j], 3, 1)
+            change = True
+        else:
+            new_lout.append(lout[j])
+    if len(new_lin) > 0:
+        removeExtra(phi, new_lin, -1, -3)
+    return change
+
+
+@jit(cache=True)
 def classify(mat, coords, outer_coords):  # (min_x,max_x,min_y,max_y)
     lin = []
     lout = []
@@ -82,13 +96,16 @@ def classify(mat, coords, outer_coords):  # (min_x,max_x,min_y,max_y)
     return phi, lin, lout, theta0 / pixels_out, theta1 / pixels_in
 
 
+@jit(nopython=True, cache=True)
 def norm(t1, t2):
-    return math.sqrt((t1[0] - t2[0]) ** 2 + (t1[1] - t2[1]) ** 2 + (t1[2] - t2[2]) ** 2)
+    return (t1[0] - t2[0]) * (t1[0] - t2[0]) + (t1[1] - t2[1]) * (t1[1] - t2[1]) + (t1[2] - t2[2]) * (t1[2] - t2[2])
 
 
+@jit(nopython=True, cache=True)
 def getF(mat, t0, t1):
     w, h, z = mat.shape
     F = np.empty((w, h))
+
     for i in range(w):
         for j in range(h):
             t = mat[i, j]
@@ -99,21 +116,24 @@ def getF(mat, t0, t1):
     return F
 
 
+@jit(cache=True)
 def checkNeighbours(phi, l, coord, ifThis, thenThat):
     x = coord[0]
     y = coord[1]
     w, h = phi.shape
     for i in range(len(directions)):
-        new_x, new_y = x + directions[i][0], y + directions[i][1]
+        new_x = x + directions[i][0]
+        new_y = y + directions[i][1]
         if 0 <= new_x < w and 0 <= new_y < h:
             if phi[new_x, new_y] == ifThis:
                 phi[new_x, new_y] = thenThat
                 l.append([new_x, new_y])
 
 
+@jit(cache=True)
 def removeExtra(phi, l, surroundedBy, setTo):
     w, h = phi.shape
-    for coord in l:
+    for counter, coord in enumerate(l):
         count = 0
         for d in directions:
             new_x, new_y = coord[0] + d[0], coord[1] + d[1]
@@ -123,5 +143,5 @@ def removeExtra(phi, l, surroundedBy, setTo):
                     count += 1
 
         if count == 0:
-            l.remove(coord)
+            del l[counter]
             phi[coord[0], coord[1]] = setTo
