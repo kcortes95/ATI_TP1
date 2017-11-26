@@ -12,6 +12,7 @@ import canny as canny
 import susan as susan
 import time
 import video
+import sift
 from timeit import default_timer as timer
 
 
@@ -99,6 +100,7 @@ class MyFirstGUI:
         border_menu.add_command(label="Contornos Activos", command=self.single_active_contours)
         border_menu.add_separator()
         border_menu.add_command(label="Harris", command=lambda: self.slider("Threshold", border.harris, "Harris"))
+        border_menu.add_command(label="SIFT", command=lambda: sift.main_sift_window(self))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
