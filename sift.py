@@ -21,13 +21,19 @@ def main_sift_window(self):
     self.l2.pack()
     self.img2 = Button(self.new_window, text="OK", width=10, height=1, command=lambda: read_file_name(filenames) )
     self.img2.pack()
-    self.ok = Button(self.new_window, text="SIFT", width=10, height=1, command=lambda: apply_sift(filenames) )
+    self.per=Label(self.new_window,text="Percentage (0 to 1)")
+    self.per.pack()
+    self.per_val = Entry(self.new_window)
+    self.per_val.pack()
+
+    self.ok = Button(self.new_window, text="SIFT", width=10, height=1, command=lambda: apply_sift(float(self.per_val.get()), filenames) )
     self.ok.pack()
 
 
-def apply_sift(filenames):
+def apply_sift(percentage, filenames):
     img1 = cv2.imread(filenames[0], 0)
     img2 = cv2.imread(filenames[1] ,0)
+    del filenames[:]
 
     # Initiate SIFT detector
     sift = cv2.xfeatures2d.SIFT_create()
@@ -37,13 +43,14 @@ def apply_sift(filenames):
     kp2, des2 = sift.detectAndCompute(img2, None)
 
     # BFMatcher with default params
+    #https://docs.opencv.org/trunk/d3/da1/classcv_1_1BFMatcher.html
     bf = cv2.BFMatcher()
     matches = bf.knnMatch(des1,des2, k=2)
 
     # Apply ratio test
     good = []
     for m,n in matches:
-        if m.distance < 0.75*n.distance:
+        if m.distance < percentage * n.distance:
             good.append([m])
 
     # cv2.drawMatchesKnn expects list of lists as matches.
