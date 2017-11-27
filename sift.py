@@ -58,17 +58,18 @@ def apply_sift(percentage, filenames):
 
     # cv2.drawMatchesKnn expects list of lists as matches.
     img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good, None, flags=2)
-    print("Total de MATCHES por BF: " + str(count))
+
     tot_kp1 = len(kp1)
     tot_kp2 = len(kp2)
-    max = 0;
+    print("tot_kp1: " + str(tot_kp1))
+    print("tot_kp2: " + str(tot_kp2))
+    print("Total de MATCHES por BF: " + str(count))
 
-    if tot_kp1 > tot_kp2:
-        max = tot_kp1 / tot_kp2
-    else:
-        max = tot_kp2 / tot_kp1
+    match_1 = count / tot_kp1
+    match_2 = count / tot_kp2
+    match = max(match_1, match_2)
 
-    if abs(max) > 0.75:
+    if match > percentage:
         print("Son la misma imagen")
     else:
         print("No son la misma imagen")
