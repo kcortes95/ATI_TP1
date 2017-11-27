@@ -100,7 +100,6 @@ class MyFirstGUI:
         border_menu.add_command(label="Contornos Activos", command=self.single_active_contours)
         border_menu.add_separator()
         border_menu.add_command(label="Harris", command=lambda: self.slider("Threshold", border.harris, "Harris"))
-        border_menu.add_command(label="SIFT", command=lambda: sift.main_sift_window(self))
         menubar.add_cascade(menu=border_menu, label="Border")
 
         difansi = Menu(menubar, tearoff=0)
@@ -130,6 +129,11 @@ class MyFirstGUI:
         video_menu = Menu(menubar, tearoff=0)
         video_menu.add_command(label="Contornos Activos", command=self.active_contours)
         menubar.add_cascade(label="Video", menu=video_menu)
+
+        sift_menu = Menu(menubar, tearoff=0)
+        sift_menu.add_command(label="SIFT", command=lambda: sift.main_sift_window(self))
+        menubar.add_cascade(label="Compare", menu=sift_menu)
+
 
 
         master.config(menu=menubar)

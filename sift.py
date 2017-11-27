@@ -69,7 +69,10 @@ def apply_sift(percentage, filenames):
     match_2 = count / tot_kp2
     match = max(match_1, match_2)
 
-    if match > percentage:
+    tolerance = 0.15
+
+    print("Tolerancia de " + str(tolernace) + "%")
+    if match > tolerance:
         print("Son la misma imagen")
     else:
         print("No son la misma imagen")
