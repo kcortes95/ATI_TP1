@@ -15,11 +15,11 @@ def main_sift_window(self):
     self.new_window.title("SIFT")
     self.l=Label(self.new_window,text="Enter Image 1")
     self.l.pack()
-    self.img1 = Button(self.new_window, text="OK", width=10, height=1, command=lambda: read_file_name(filenames) )
+    self.img1 = Button(self.new_window, text="Browse", width=10, height=1, command=lambda: read_file_name(filenames) )
     self.img1.pack()
     self.l2=Label(self.new_window,text="Enter Image 2")
     self.l2.pack()
-    self.img2 = Button(self.new_window, text="OK", width=10, height=1, command=lambda: read_file_name(filenames) )
+    self.img2 = Button(self.new_window, text="Browse", width=10, height=1, command=lambda: read_file_name(filenames) )
     self.img2.pack()
     self.per=Label(self.new_window,text="Percentage (0 to 1)")
     self.per.pack()
@@ -47,14 +47,31 @@ def apply_sift(percentage, filenames):
     bf = cv2.BFMatcher()
     matches = bf.knnMatch(des1,des2, k=2)
 
+    count = 0
+
     # Apply ratio test
     good = []
     for m,n in matches:
         if m.distance < percentage * n.distance:
             good.append([m])
+            count += 1
 
     # cv2.drawMatchesKnn expects list of lists as matches.
     img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good, None, flags=2)
+    print("Total de MATCHES por BF: " + str(count))
+    tot_kp1 = len(kp1)
+    tot_kp2 = len(kp2)
+    max = 0;
+
+    if tot_kp1 > tot_kp2:
+        max = tot_kp1 / tot_kp2
+    else:
+        max = tot_kp2 / tot_kp1
+
+    if abs(max) > 0.75:
+        print("Son la misma imagen")
+    else:
+        print("No son la misma imagen")
 
     plt.imshow(img3),plt.show()
 
