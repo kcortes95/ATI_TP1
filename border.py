@@ -136,11 +136,14 @@ def get_tops(acumulator, m):
 
 
 def harris(matrix, threshold):
-    print(matrix)
-    print(sobel_matrix)
-    dx = sp.signal.convolve2d(matrix, sobel_matrix, boundary='symm', mode='same')
-    dy = sp.signal.convolve2d(matrix, np.transpose(sobel_matrix), boundary='symm', mode='same')
-    gm = mesh.gauss_mesh(5, 1)
+    if len(matrix.shape) == 3:
+        matrix_to_op = actions.to_grayscale(matrix)
+    else:
+        matrix_to_op = matrix
+
+    dx = sp.signal.convolve2d(matrix_to_op, sobel_matrix, boundary='symm', mode='same')
+    dy = sp.signal.convolve2d(matrix_to_op, np.transpose(sobel_matrix), boundary='symm', mode='same')
+    gm = mesh.gauss_mesh(7, 2)
     dx2 = sp.signal.convolve2d(np.power(dx, 2), gm, boundary='symm', mode='same')
     dy2 = sp.signal.convolve2d(np.power(dy, 2), gm, boundary='symm', mode='same')
     lxy = sp.signal.convolve2d(np.multiply(dx, dy), gm, boundary='symm', mode='same')
@@ -153,9 +156,12 @@ def harris(matrix, threshold):
 def combine(original, modified):
     shape = original.shape
     res = np.zeros((shape[0], shape[1], 3), dtype=np.uint8)
-    res[:, :, 0] = original
-    res[:, :, 1] = original
-    res[:, :, 2] = original
+    if len(original.shape) == 2:
+        res[:, :, 0] = original
+        res[:, :, 1] = original
+        res[:, :, 2] = original
+    else:
+        res = original
     for i in range(modified.shape[0]):
         for j in range(modified.shape[1]):
             if modified[i, j] == 255:

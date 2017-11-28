@@ -683,5 +683,24 @@ def getf2(value, r1, r2, s1, s2):
 def getf1(value, r1, s1):
     return s1/r1*value
 
+
 def linear_transform(matrix):
     return np.interp(matrix, [np.min(matrix),np.max(matrix)], [0,255]).astype(np.uint8)
+
+
+def rotate(matrix):
+    return np.rot90(matrix)
+
+
+def to_grayscale(matrix):
+    if len(matrix.shape) == 1:
+        return matrix
+    #res = np.empty((matrix.shape[0], matrix.shape[1]))
+    res = np.apply_over_axes(np.average, matrix, [2])
+    print(res.shape)
+    return res.reshape((matrix.shape[0], matrix.shape[1]))
+    #for i in range(matrix.shape[0]):
+    #    for j in range(matrix.shape[1]):
+    #        res[i, j] =
+
+#    return res

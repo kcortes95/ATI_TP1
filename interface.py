@@ -47,6 +47,8 @@ class MyFirstGUI:
         editmenu = Menu(menubar, tearoff=0)
         editmenu.add_command(label="Undo", command=self.undo, accelerator="Command+z")
         editmenu.add_command(label="Crop", command=lambda: actions.crop(self, master))
+        editmenu.add_command(label="Rotate", command=lambda: self.apply_method(actions.rotate))
+        editmenu.add_command(label="Grayscale", command=lambda: self.apply_method(actions.to_grayscale))
         editmenu.add_separator()
         editmenu.add_command(label="Area Info", command=lambda: actions.get_area_info(self, master))
         editmenu.add_command(label="To HSV", command=lambda: actions.rgb_to_hsv(self))
