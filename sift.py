@@ -29,10 +29,21 @@ def main_sift_window(self):
     self.ok = Button(self.new_window, text="SIFT", width=10, height=1, command=lambda: apply_sift(float(self.per_val.get()), filenames) )
     self.ok.pack()
 
+def get_faces(img):
+    gray = np.copy(img)
+    face_cascade = cv2.CascadeClassifier('opencv-files/haarcascade_frontalface_alt.xml')
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.2, minNeighbors=5)
+
+    if (len(faces) == 0):
+        return None, None
+
+    (x, y, w, h) = faces[0]
+
+    return gray[y:y + w, x:x + h], faces[0]
 
 def apply_sift(percentage, filenames):
-    img1 = cv2.imread(filenames[0], 0)
-    img2 = cv2.imread(filenames[1] ,0)
+    img1, rect1 = get_faces(cv2.imread(filenames[0], 0))
+    img2 = cv2.imread(filenames[1], 0)
     del filenames[:]
 
     # Initiate SIFT detector
@@ -40,12 +51,13 @@ def apply_sift(percentage, filenames):
 
     # find the keypoints and descriptors with SIFT
     kp1, des1 = sift.detectAndCompute(img1, None)
-    kp2, des2 = sift.detectAndCompute(img2, None)
+    face2, rect = get_faces(img2)
+    kp2, des2 = sift.detectAndCompute(face2, None)
 
     # BFMatcher with default params
     #https://docs.opencv.org/trunk/d3/da1/classcv_1_1BFMatcher.html
     bf = cv2.BFMatcher()
-    matches = bf.knnMatch(des1,des2, k=2)
+    matches = bf.knnMatch(des1, des2, k=2)
 
     count = 0
 
@@ -57,7 +69,7 @@ def apply_sift(percentage, filenames):
             count += 1
 
     # cv2.drawMatchesKnn expects list of lists as matches.
-    img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good, None, flags=2)
+    img3 = cv2.drawMatchesKnn(img1,kp1,face2,kp2,good, None, flags=2)
 
     tot_kp1 = len(kp1)
     tot_kp2 = len(kp2)
