@@ -26,8 +26,12 @@ def main_sift_window(self):
     self.per_val = Entry(self.new_window)
     self.per_val.pack()
 
-    self.ok = Button(self.new_window, text="SIFT", width=10, height=1, command=lambda: apply_sift(float(self.per_val.get()), filenames) )
+    self.ok = Button(self.new_window, text="SIFT - With faces", width=10, height=1, command=lambda: apply_sift(float(self.per_val.get()), filenames, True))
     self.ok.pack()
+
+    self.ok2 = Button(self.new_window, text="SIFT", width=10, height=1,
+                     command=lambda: apply_sift(float(self.per_val.get()), filenames, False))
+    self.ok2.pack()
 
 def get_faces(img):
     gray = np.copy(img)
@@ -41,9 +45,13 @@ def get_faces(img):
 
     return gray[y:y + w, x:x + h], faces[0]
 
-def apply_sift(percentage, filenames):
-    img1, rect1 = get_faces(cv2.imread(filenames[0], 0))
-    img2 = cv2.imread(filenames[1], 0)
+def apply_sift(percentage, filenames, find_faces):
+    if find_faces:
+        img1, rect1 = get_faces(cv2.imread(filenames[0], 0))
+        img2, rect2 = get_faces(cv2.imread(filenames[1], 0))
+    else:
+        img1 = cv2.imread(filenames[0], 0)
+        img2 = cv2.imread(filenames[1], 0)
     del filenames[:]
 
     # Initiate SIFT detector
@@ -51,8 +59,7 @@ def apply_sift(percentage, filenames):
 
     # find the keypoints and descriptors with SIFT
     kp1, des1 = sift.detectAndCompute(img1, None)
-    face2, rect = get_faces(img2)
-    kp2, des2 = sift.detectAndCompute(face2, None)
+    kp2, des2 = sift.detectAndCompute(img2, None)
 
     # BFMatcher with default params
     #https://docs.opencv.org/trunk/d3/da1/classcv_1_1BFMatcher.html
@@ -69,7 +76,7 @@ def apply_sift(percentage, filenames):
             count += 1
 
     # cv2.drawMatchesKnn expects list of lists as matches.
-    img3 = cv2.drawMatchesKnn(img1,kp1,face2,kp2,good, None, flags=2)
+    img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good, None, flags=4)
 
     tot_kp1 = len(kp1)
     tot_kp2 = len(kp2)
